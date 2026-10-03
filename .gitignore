@@ -1,0 +1,11 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Bản nén / sao lưu
+*.zip
+
+# Bí mật
+.env
+.env.*

@@ -1,0 +1,66 @@
+[
+  {
+    "file": "ha-long.jpg",
+    "place": "Vịnh Hạ Long",
+    "author": "Jakub Hałun",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:View_of_sea_from_Titov_Island,_Ha_Long_Bay,_Vietnam,_20240128_1337_3732.jpg"
+  },
+  {
+    "file": "hoi-an.jpg",
+    "place": "Phố cổ Hội An",
+    "author": "Supanut Arunoprayote",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Hoi_An_(I).jpg"
+  },
+  {
+    "file": "hue.jpg",
+    "place": "Đại Nội Huế",
+    "author": "CEphoto, Uwe Aranas",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Hue_Vietnam_Citadel-of-Hu%E1%BA%BF-01.jpg"
+  },
+  {
+    "file": "sa-pa.jpg",
+    "place": "Sa Pa",
+    "author": "Jakub Hałun",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Road_and_paddy_fields_in_Sa_Pa,_Vietnam,_20240126_1202_3586.jpg"
+  },
+  {
+    "file": "trang-an.jpg",
+    "place": "Tràng An, Ninh Bình",
+    "author": "Jakub Hałun",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Trang_An_Landscape_Complex,_Ninh_Binh_Province,_Vietnam,_20240202_1456_5313.jpg"
+  },
+  {
+    "file": "ha-noi.jpg",
+    "place": "Văn Miếu, Hà Nội",
+    "author": "Jakub Hałun",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Constellation_of_Literature_pavilion,_Temple_of_Literature,_Hanoi,_Vietnam,_20240123_0939_3103.jpg"
+  },
+  {
+    "file": "da-nang.jpg",
+    "place": "Sơn Trà, Đà Nẵng",
+    "author": "CEphoto, Uwe Aranas",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg"
+  },
+  {
+    "file": "sai-gon.jpg",
+    "place": "Bưu điện Sài Gòn, TP.HCM",
+    "author": "Diego Delso",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Oficina_Central_de_Correos,_Ciudad_Ho_Chi_Minh,_Vietnam,_2013-08-14,_DD_04.JPG"
+  }
+]

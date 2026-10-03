@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tripconnect_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tripconnect
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      TZ: Asia/Ho_Chi_Minh
+      PGTZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5432:5432"
+    volumes:
+      - tripconnect_pg_data:/var/lib/postgresql/data
+
+volumes:
+  tripconnect_pg_data:

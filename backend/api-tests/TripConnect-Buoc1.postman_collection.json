@@ -1,0 +1,1322 @@
+{
+  "info": {
+    "name": "TripConnect - Bước 1 (Hồ sơ Agent + Quản lý người dùng)",
+    "description": "Import vào Postman: Import > chọn file này. Environment TripConnectLocal cần biến baseUrl = http://localhost:8080. Các biến agentToken, agentRefreshToken, adminToken, adminRefreshToken được request Login / Refresh TỰ ĐIỀN. Access token hết hạn (401) -> bấm Send ở request Refresh tương ứng.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "c0960fad-20de-48b6-b9ec-fe04096c77cb"
+  },
+  "item": [
+    {
+      "name": "00. Chuẩn bị - Đăng ký Agent mới",
+      "item": [
+        {
+          "name": "Xem danh sách địa điểm (lấy id cho locationIds)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/locations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "locations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem danh sách loại hình tour (lấy id cho categoryIds)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tour-categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tour-categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem danh sách ngân hàng (lấy bin cho bankBin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "banks"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đăng ký Agent (dùng email thật để nhận OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyễn Văn Agent\",\n  \"email\": \"email-that-cua-ban+agent2@gmail.com\",\n  \"phone\": \"0901234567\",\n  \"password\": \"Password123\",\n  \"role\": \"AGENT\",\n  \"agentProfile\": {\n    \"companyName\": \"Công ty TNHH Du lịch B\",\n    \"taxCode\": \"0109876543\",\n    \"address\": \"10 Hàng Bài, phường Hoàn Kiếm\",\n    \"locationIds\": [\n      1,\n      2\n    ],\n    \"categoryIds\": [\n      1,\n      7\n    ],\n    \"addressProvinceId\": 1,\n    \"bankBin\": \"970407\",\n    \"bankAccountNumber\": \"19031234567890\",\n    \"bankAccountHolder\": \"CONG TY TNHH DU LICH B\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xác thực OTP (mã trong email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"email-that-cua-ban+agent2@gmail.com\",\n  \"otp\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-otp"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "0. Đăng nhập",
+      "item": [
+        {
+          "name": "Login Agent (tự lưu token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@example.com\",\n  \"password\": \"Password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Tự lưu token vào Environment đang chọn (không cần copy-paste)",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set(\"agentToken\", body.accessToken);",
+                  "    pm.environment.set(\"agentRefreshToken\", body.refreshToken);",
+                  "    console.log(\"Đã lưu token Agent vào Environment\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Admin (tự lưu token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Tự lưu token vào Environment đang chọn (không cần copy-paste)",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set(\"adminToken\", body.accessToken);",
+                  "    pm.environment.set(\"adminRefreshToken\", body.refreshToken);",
+                  "    console.log(\"Đã lưu token Admin vào Environment\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Agent (khi gặp 401 thì bấm Send ở đây)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Tự lưu token vào Environment đang chọn (không cần copy-paste)",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set(\"agentToken\", body.accessToken);",
+                  "    pm.environment.set(\"agentRefreshToken\", body.refreshToken);",
+                  "    console.log(\"Đã lưu token Agent vào Environment\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{agentRefreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Admin (khi gặp 401 thì bấm Send ở đây)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Tự lưu token vào Environment đang chọn (không cần copy-paste)",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set(\"adminToken\", body.accessToken);",
+                  "    pm.environment.set(\"adminRefreshToken\", body.refreshToken);",
+                  "    console.log(\"Đã lưu token Admin vào Environment\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{adminRefreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Thông tin cá nhân",
+      "item": [
+        {
+          "name": "Xem thông tin của tôi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sửa họ tên + số điện thoại",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Agent - Hồ sơ kinh doanh",
+      "item": [
+        {
+          "name": "Xem hồ sơ của tôi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sửa thông tin pháp lý (chỉ khi Nháp / Cần bổ sung)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Công ty TNHH Du lịch A\",\n  \"taxCode\": \"0101234567\",\n  \"businessLicense\": \"01-123/2024/TCDL-GP LHQT\",\n  \"addressProvinceId\": 1,\n  \"address\": \"1 Tràng Tiền, phường Hoàn Kiếm\",\n  \"bankBin\": \"970436\",\n  \"bankAccountNumber\": \"0011001234567\",\n  \"bankAccountHolder\": \"CONG TY TNHH DU LICH A\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lưu số giấy phép lữ hành (chỉ khi Nháp / Cần bổ sung)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessLicense\": \"01-123/2024/TCDL-GP LHQT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/business-license",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "business-license"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sửa khu vực phụ trách + loại hình thế mạnh",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"locationIds\": [1, 2],\n  \"categoryIds\": [1, 7]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/expertise",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "expertise"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload giấy tờ (đổi type cho từng loại)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "type",
+                  "type": "text",
+                  "value": "TRAVEL_LICENSE",
+                  "description": "TRAVEL_LICENSE | BUSINESS_REGISTRATION | REPRESENTATIVE_ID_FRONT | REPRESENTATIVE_ID_BACK | OTHER"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "documents"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lấy link xem giấy tờ (hết hạn sau 5 phút)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/documents/1/url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "documents",
+                "1",
+                "url"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa giấy tờ (chỉ khi Nháp / Cần bổ sung)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/documents/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "documents",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Nộp hồ sơ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "submit"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bật/tắt Đang nhận yêu cầu (chỉ khi đã duyệt)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accepting\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/accepting-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "accepting-requests"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Agent - Yêu cầu cập nhật hồ sơ (sau khi đã duyệt)",
+      "item": [
+        {
+          "name": "Gửi yêu cầu cập nhật (để trống trường nào = không đổi)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "address",
+                  "type": "text",
+                  "value": "25 Lý Thường Kiệt, Hà Nội"
+                },
+                {
+                  "key": "addressProvinceId",
+                  "type": "text",
+                  "value": "",
+                  "disabled": true,
+                  "description": "id Tỉnh/Thành mới (xem GET /api/locations)"
+                },
+                {
+                  "key": "bankBin",
+                  "type": "text",
+                  "value": "",
+                  "description": "Đổi ngân hàng: nhập ĐỦ bankBin + bankAccountNumber + bankAccountHolder (xem GET /api/banks)"
+                },
+                {
+                  "key": "bankAccountNumber",
+                  "type": "text",
+                  "value": ""
+                },
+                {
+                  "key": "bankAccountHolder",
+                  "type": "text",
+                  "value": ""
+                },
+                {
+                  "key": "currentPassword",
+                  "type": "text",
+                  "value": ""
+                },
+                {
+                  "key": "travelLicense",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "businessRegistration",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "representativeIdFront",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "representativeIdBack",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "otherDocuments",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/change-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "change-requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem các yêu cầu của tôi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/change-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "change-requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hủy yêu cầu đang chờ",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/profile/change-requests/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "profile",
+                "change-requests",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Admin - Duyệt hồ sơ Agent",
+      "item": [
+        {
+          "name": "Số việc chờ xử lý (Tổng quan)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "summary"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Danh sách hồ sơ chờ duyệt",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-profiles?status=PENDING_APPROVAL&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-profiles"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING_APPROVAL"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tìm hồ sơ theo tên công ty / email / MST",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-profiles?q=du lich&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-profiles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "du lich"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết hồ sơ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-profiles/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-profiles",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin xem giấy tờ (link 5 phút)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-profiles/1/documents/1/url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-profiles",
+                "1",
+                "documents",
+                "1",
+                "url"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Duyệt hồ sơ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-profiles/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-profiles",
+                "1",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Yêu cầu bổ sung (từ chối)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Ảnh CCCD mặt sau bị mờ, vui lòng chụp lại\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-profiles/1/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-profiles",
+                "1",
+                "reject"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Admin - Yêu cầu cập nhật hồ sơ",
+      "item": [
+        {
+          "name": "Danh sách yêu cầu chờ duyệt",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-change-requests?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-change-requests"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết (kèm hồ sơ hiện tại để so sánh)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-change-requests/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-change-requests",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Duyệt yêu cầu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-change-requests/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-change-requests",
+                "1",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Từ chối yêu cầu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Giấy phép mới chưa có dấu xác nhận\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/agent-change-requests/1/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "agent-change-requests",
+                "1",
+                "reject"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Admin - Quản lý người dùng",
+      "item": [
+        {
+          "name": "Tìm kiếm người dùng",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users?q=&role=&active=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": ""
+                },
+                {
+                  "key": "role",
+                  "value": ""
+                },
+                {
+                  "key": "active",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Vô hiệu hóa tài khoản",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Đăng nội dung vi phạm\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/2/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "2",
+                "deactivate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Kích hoạt lại tài khoản",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/2/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "2",
+                "activate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
