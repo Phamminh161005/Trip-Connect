@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, FilePen, LayoutDashboard, Map, Store, Ticket, Users } from "lucide-react";
+import { ArrowLeft, FilePen, LayoutDashboard, Map, Star, Store, Ticket, Users } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ADMIN_AREA_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ const ITEMS: { href: string; label: string; icon: typeof Users; exact?: boolean;
   { href: "/admin/change-requests", label: "Yêu cầu cập nhật", icon: FilePen, count: "pendingChangeRequests" },
   { href: "/admin/tours", label: "Tour", icon: Map, count: "pendingTours" },
   { href: "/admin/bookings", label: "Đơn đặt tour", icon: Ticket, count: "manualRefunds" },
+  { href: "/admin/reviews", label: "Đánh giá", icon: Star },
   { href: "/admin/users", label: "Người dùng", icon: Users },
 ];
 

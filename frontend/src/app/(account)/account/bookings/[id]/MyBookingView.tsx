@@ -21,6 +21,7 @@ import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 import { formatDay, formatPrice } from "@/lib/tour/labels";
 import type { BookingDetail } from "@/types/booking";
 import { MY_BOOKINGS_KEY } from "../MyBookingList";
+import { MyReviewSection } from "./MyReviewSection";
 
 export function MyBookingView({ id }: { id: number }) {
   const key = [...MY_BOOKINGS_KEY, id];
@@ -74,7 +75,9 @@ export function MyBookingView({ id }: { id: number }) {
             )}
           </>
         }
-      />
+      >
+        <MyReviewSection booking={booking} />
+      </BookingDetailView>
       {passengersOpen && (
         <PassengerListDialog
           booking={booking}

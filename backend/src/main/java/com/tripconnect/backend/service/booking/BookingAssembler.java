@@ -6,6 +6,8 @@ import com.tripconnect.backend.enums.BookingStatus;
 import com.tripconnect.backend.repository.AgentProfileRepository;
 import com.tripconnect.backend.repository.PaymentRepository;
 import com.tripconnect.backend.repository.RefundRepository;
+import com.tripconnect.backend.repository.ReviewRepository;
+import com.tripconnect.backend.service.review.ReviewRules;
 import com.tripconnect.backend.repository.TourImageRepository;
 import com.tripconnect.backend.storage.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -34,17 +38,22 @@ public class BookingAssembler {
     private final RefundRepository refundRepository;
     private final AgentProfileRepository agentProfileRepository;
     private final FileStorageService fileStorageService;
+    private final ReviewRepository reviewRepository;
     private final Clock clock;
 
     public List<BookingResponses.Summary> toSummaries(Page<Booking> page) {
         List<Booking> bookings = page.getContent();
         Map<Long, String> covers = coverUrls(bookings.stream().map(b -> b.getTour().getId()).distinct().toList());
+        Set<Long> reviewed = bookings.isEmpty() ? Set.of()
+                : new HashSet<>(reviewRepository.findReviewedBookingIds(bookings.stream().map(Booking::getId).toList()));
+        LocalDateTime now = LocalDateTime.now(clock);
         return bookings.stream().map(b -> new BookingResponses.Summary(
                 b.getId(), b.getCode(), b.getStatus(), b.getRefundStatus(),
                 b.getTour().getId(), b.getTour().getTitle(), covers.get(b.getTour().getId()),
                 b.getDeparture().getStartDate(), b.getDeparture().endDate(b.getTour().getDurationDays()),
                 b.getAdults(), b.getChildren(), b.getInfants(), b.getTotalAmount(), b.getRefundAmount(),
-                b.getContactName(), b.getCustomer().getEmail(), b.getHoldExpiresAt(), b.getCreatedAt())).toList();
+                b.getContactName(), b.getCustomer().getEmail(), b.getHoldExpiresAt(),
+                !reviewed.contains(b.getId()) && ReviewRules.canWrite(b, now), b.getCreatedAt())).toList();
     }
 
     public BookingResponses.Detail toDetail(Booking b, Viewer viewer) {
@@ -61,6 +70,7 @@ public class BookingAssembler {
                         p.getBankCode(), p.getVnpTransactionNo(), p.getVnpResponseCode(), p.getCreatedAt()))
                 .toList()
                 : List.of();
+        Long reviewId = reviewRepository.findByBookingId(b.getId()).map(Review::getId).orElse(null);
         List<BookingResponses.RefundView> refunds = refundRepository.findByBookingIdOrderByIdDesc(b.getId()).stream()
                 .map(r -> new BookingResponses.RefundView(r.getId(), r.getAmount(), r.getStatus(), r.getReason(),
                         staff ? r.getMessage() : null, r.getProcessedAt(), r.getCreatedAt()))
@@ -85,6 +95,8 @@ public class BookingAssembler {
                 payments, refunds,
                 pendingAlive,
                 pendingAlive || (b.getStatus() == BookingStatus.PAID && beforeDeparture),
+                reviewId,
+                viewer == Viewer.CUSTOMER && reviewId == null && ReviewRules.canWrite(b, now),
                 b.getCreatedAt());
     }
 

@@ -8,6 +8,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +22,11 @@ import java.util.Optional;
 public interface AgentProfileRepository extends JpaRepository<AgentProfile, Long>, JpaSpecificationExecutor<AgentProfile> {
 
     Optional<AgentProfile> findByUserId(Long userId);
+
+    /** Khóa hồ sơ khi cập nhật điểm đánh giá (2 đánh giá cùng lúc không ghi đè điểm của nhau). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from AgentProfile p where p.user.id = :userId")
+    Optional<AgentProfile> findByUserIdForUpdate(@Param("userId") Long userId);
 
     List<AgentProfile> findByUserIdIn(Collection<Long> userIds);
 

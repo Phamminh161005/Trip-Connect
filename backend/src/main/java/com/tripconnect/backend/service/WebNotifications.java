@@ -43,6 +43,27 @@ public final class WebNotifications {
                 tourTitle + " · tập trung " + meetingTime + " tại " + meetingPoint, "/account/bookings/" + bookingId);
     }
 
+    /** Đơn vừa hoàn thành: mời đánh giá (link mở sẵn khung viết đánh giá). */
+    public static WebMessage reviewInvite(Long bookingId, String tourTitle) {
+        return new WebMessage(NotificationType.REVIEW_INVITE, "Chuyến đi thế nào? Hãy đánh giá tour",
+                tourTitle + " · nhận xét của bạn giúp các khách khác chọn tour", "/account/bookings/" + bookingId + "?review=1");
+    }
+
+    public static WebMessage reviewReplied(Long bookingId, String tourTitle) {
+        return new WebMessage(NotificationType.REVIEW_REPLIED, "Đơn vị tổ chức đã trả lời đánh giá của bạn", tourTitle,
+                "/account/bookings/" + bookingId);
+    }
+
+    public static WebMessage reviewHidden(Long bookingId, String tourTitle, String reason) {
+        return new WebMessage(NotificationType.REVIEW_HIDDEN, "Đánh giá của bạn đã bị ẩn",
+                tourTitle + " · lý do: " + reason, "/account/bookings/" + bookingId);
+    }
+
+    public static WebMessage reviewUnhidden(Long bookingId, String tourTitle) {
+        return new WebMessage(NotificationType.REVIEW_UNHIDDEN, "Đánh giá của bạn đã được hiện lại",
+                tourTitle + " · đánh giá hiển thị lại trên trang tour", "/account/bookings/" + bookingId);
+    }
+
     // ===== Agent =====
 
     public static WebMessage newBooking(Long bookingId, String code, String tourTitle, LocalDate startDate, int travellers,
@@ -95,6 +116,22 @@ public final class WebNotifications {
 
     private static String departureLink(boolean platformTour, Long tourId, Long departureId) {
         return (platformTour ? "/admin" : "/agent") + "/tours/" + tourId + "/departures/" + departureId;
+    }
+
+    public static WebMessage newReview(boolean platformTour, String tourTitle, int rating) {
+        return new WebMessage(NotificationType.NEW_REVIEW, "Đánh giá mới " + rating + "★", tourTitle,
+                (platformTour ? "/admin" : "/agent") + "/reviews");
+    }
+
+    /** Báo Agent: đánh giá tour của mình bị Admin ẩn (điểm trung bình thay đổi). */
+    public static WebMessage tourReviewHidden(String tourTitle, int rating, String reason) {
+        return new WebMessage(NotificationType.TOUR_REVIEW_HIDDEN, "Một đánh giá " + rating + "★ đã bị ẩn",
+                tourTitle + " · lý do: " + reason, "/agent/reviews");
+    }
+
+    public static WebMessage tourReviewUnhidden(String tourTitle, int rating) {
+        return new WebMessage(NotificationType.TOUR_REVIEW_UNHIDDEN, "Một đánh giá " + rating + "★ đã được hiện lại",
+                tourTitle + " · đánh giá hiển thị lại trên trang tour", "/agent/reviews");
     }
 
     public static WebMessage departureReminder(boolean platformTour, Long tourId, Long departureId, String tourTitle,

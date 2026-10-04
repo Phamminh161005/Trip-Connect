@@ -4,6 +4,7 @@ import com.tripconnect.backend.enums.BookingStatus;
 import com.tripconnect.backend.repository.BookingRepository;
 import com.tripconnect.backend.service.booking.PaymentService;
 import com.tripconnect.backend.service.booking.TripReminderService;
+import com.tripconnect.backend.service.review.ReviewInviter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ public class BookingJobs {
     private final BookingRepository bookingRepository;
     private final PaymentService paymentService;
     private final TripReminderService tripReminderService;
+    private final ReviewInviter reviewInviter;
     private final Clock clock;
 
     /** Mỗi phút: đơn chờ thanh toán quá hạn -> hỏi lại VNPay, chưa trả thì hủy và nhả chỗ. */
@@ -56,7 +58,7 @@ public class BookingJobs {
         tripReminderService.sendDueReminders();
     }
 
-    /** 01:00 mỗi ngày: đơn đã thanh toán của chuyến đã về quá 3 ngày -> Hoàn thành (khách được đánh giá tour). */
+    /** 01:00 mỗi ngày: đơn đã thanh toán của chuyến đã về quá 3 ngày -> Hoàn thành + mời khách đánh giá tour. */
     @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void completeFinishedTrips() {
@@ -67,6 +69,7 @@ public class BookingJobs {
             if (b.getStatus() == BookingStatus.PAID) {
                 b.setStatus(BookingStatus.COMPLETED);
                 b.setCompletedAt(now);
+                reviewInviter.invite(b);
             }
         });
         if (!ids.isEmpty()) log.info("Đã chuyển {} đơn sang Hoàn thành", ids.size());

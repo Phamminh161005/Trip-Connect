@@ -3220,6 +3220,332 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "14. Đánh giá tour (đơn phải Hoàn thành — trên máy có thể chuyển đơn bằng SQL)",
+      "item": [
+        {
+          "name": "Trang tour: danh sách đánh giá (công khai, trang sau: before = nextCursor)",
+          "_postman_id": "3c25a0c2-5972-4cc8-9fbe-8e83c4f183b6",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours/1/reviews?size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours",
+                "1",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Trang tour: điểm + biểu đồ số sao",
+          "_postman_id": "f22b3454-5209-47ca-9cc1-e40240455e9b",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours/1/reviews/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours",
+                "1",
+                "reviews",
+                "summary"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Khách: đánh giá của tôi cho đơn (204 = chưa đánh giá)",
+          "_postman_id": "a805d1c8-024d-4590-b85e-3f835ae6c6b7",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1",
+                "review"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Khách: viết đánh giá",
+          "_postman_id": "daeb825e-4c6f-4375-b976-68efe2350b27",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Hướng dẫn viên nhiệt tình, lịch trình hợp lý, sẽ quay lại.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1",
+                "review"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Khách: sửa đánh giá (trong 7 ngày)",
+          "_postman_id": "a222b5ff-bd66-428e-8f2d-8fa04b6fefb3",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Sửa lại: tour tốt, bữa trưa ngày 2 hơi muộn.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agent: đánh giá tour của mình (lọc replied, rating)",
+          "_postman_id": "ac0bec2b-2ebf-4798-8e7c-b1af94b6b426",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/reviews?replied=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "replied",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agent: trả lời đánh giá",
+          "_postman_id": "0f73d404-02da-4e77-a325-96523fc6f02f",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reply\": \"Cảm ơn anh/chị đã góp ý!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/reviews/1/reply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "reviews",
+                "1",
+                "reply"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: mọi đánh giá (lọc hidden, rating, q)",
+          "_postman_id": "a26d7757-7c29-416f-a164-c7a53f20832c",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reviews?hidden=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "hidden",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: ẩn đánh giá",
+          "_postman_id": "bacf209d-19c8-465e-8711-5b30b708fd1a",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Nội dung quảng cáo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reviews/1/hide",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reviews",
+                "1",
+                "hide"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: hiện lại đánh giá",
+          "_postman_id": "e14ae7d7-2201-4bfc-9cbe-0f03fad4fe0a",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reviews/1/unhide",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reviews",
+                "1",
+                "unhide"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

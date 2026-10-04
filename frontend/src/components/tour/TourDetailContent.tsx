@@ -57,9 +57,9 @@ export function TourDetailContent({ tour, getItineraryFileUrl, departures, aside
         <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">{tour.title}</h1>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-muted-foreground">
           {tour.ratingCount > 0 && tour.rating !== null && (
-            <span className="flex items-center gap-1 font-medium text-foreground">
+            <a href="#reviews" className="flex items-center gap-1 font-medium text-foreground hover:underline">
               <Star className="size-4 fill-amber-400 text-amber-400" /> {tour.rating.toFixed(1)} ({tour.ratingCount} đánh giá)
-            </span>
+            </a>
           )}
           <span className="flex items-center gap-1.5">
             <MapPin className="size-4" /> {tour.destinations.map(locationLabel).join(" · ")}

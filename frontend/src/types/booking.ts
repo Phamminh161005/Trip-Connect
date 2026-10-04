@@ -25,6 +25,8 @@ export interface BookingSummary {
   customerName: string;
   customerEmail: string;
   holdExpiresAt: string;
+  /** Đơn hoàn thành, chưa đánh giá, còn trong hạn */
+  canReview: boolean;
   createdAt: string;
 }
 
@@ -101,6 +103,9 @@ export interface BookingDetail {
   refunds: RefundView[];
   canPay: boolean;
   canCancel: boolean;
+  /** Đã đánh giá thì có id; canReview = còn được viết đánh giá mới */
+  reviewId: number | null;
+  canReview: boolean;
   createdAt: string;
 }
 

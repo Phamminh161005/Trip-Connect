@@ -7,6 +7,10 @@ public enum NotificationType {
     BOOKING_CANCELLED,
     REFUND_COMPLETED,
     TRIP_REMINDER,
+    REVIEW_INVITE,
+    REVIEW_REPLIED,
+    REVIEW_HIDDEN,
+    REVIEW_UNHIDDEN,
     // Agent
     NEW_BOOKING,
     TOUR_APPROVED,
@@ -18,6 +22,9 @@ public enum NotificationType {
     CHANGE_REQUEST_APPROVED,
     CHANGE_REQUEST_REJECTED,
     // Đơn vị tổ chức (Agent, hoặc Admin với tour của TripConnect)
+    NEW_REVIEW,
+    TOUR_REVIEW_HIDDEN,
+    TOUR_REVIEW_UNHIDDEN,
     DEPARTURE_REMINDER,
     LOW_BOOKINGS,
     // Admin

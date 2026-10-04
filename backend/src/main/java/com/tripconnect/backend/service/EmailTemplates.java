@@ -169,6 +169,15 @@ public final class EmailTemplates {
                         + "Quản lý lịch khởi hành: " + departureUrl);
     }
 
+    public static Email reviewInvite(String code, String tourTitle, int windowDays, String reviewUrl) {
+        return new Email(
+                "Chuyến đi \"" + tourTitle + "\" của bạn thế nào? - TripConnect",
+                "Cảm ơn bạn đã đồng hành cùng TripConnect trong chuyến đi \"" + tourTitle + "\" (đơn " + code + ").\n\n"
+                        + "Hãy dành một phút đánh giá tour — nhận xét của bạn giúp các khách khác chọn được chuyến đi phù hợp"
+                        + " và giúp đơn vị tổ chức phục vụ tốt hơn.\n"
+                        + "Bạn có thể đánh giá trong " + windowDays + " ngày tới tại: " + reviewUrl);
+    }
+
     public static Email bookingCancelled(String code, String tourTitle, String reason, long refundAmount) {
         String refund = refundAmount > 0
                 ? "Số tiền hoàn lại: " + money(refundAmount) + ". Tiền sẽ về tài khoản / thẻ đã thanh toán trong vài ngày làm việc."

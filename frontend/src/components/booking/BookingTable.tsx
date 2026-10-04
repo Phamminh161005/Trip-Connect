@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Star } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTime } from "@/lib/format";
 import { travellersText } from "@/lib/booking/labels";
@@ -71,6 +71,15 @@ export function BookingTable({
                 <div className="flex flex-col items-start gap-1">
                   <BookingStatusBadge status={b.status} />
                   <RefundStatusBadge status={b.refundStatus} />
+                  {b.canReview && !showCustomer && (
+                    <Link
+                      href={`${href}?review=1`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                    >
+                      <Star className="size-3.5" /> Viết đánh giá
+                    </Link>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPinOff } from "lucide-react";
+import { TourReviewsSection } from "@/components/review/TourReviewsSection";
 import { TourDeparturesTable, TourMobileBookingBar, TourPriceBox } from "@/components/tour/TourDeparturesTable";
 import { TourDetailContent } from "@/components/tour/TourDetailContent";
 import { Button } from "@/components/ui/button";
@@ -37,12 +38,18 @@ export function PublicTourView({ id }: { id: number }) {
           </Button>
         </div>
       ) : (
-        <TourDetailContent
-          tour={tour}
-          getItineraryFileUrl={() => getPublicItineraryFileUrl(id)}
-          departures={<TourDeparturesTable departures={tour.departures} bookTourId={tour.id} />}
-          aside={<TourPriceBox departures={tour.departures} />}
-        />
+        <>
+          <TourDetailContent
+            tour={tour}
+            getItineraryFileUrl={() => getPublicItineraryFileUrl(id)}
+            departures={<TourDeparturesTable departures={tour.departures} bookTourId={tour.id} />}
+            aside={<TourPriceBox departures={tour.departures} />}
+          />
+          <TourReviewsSection
+            tourId={tour.id}
+            providerName={tour.platformTour ? "TripConnect" : (tour.provider?.companyName ?? "đơn vị tổ chức")}
+          />
+        </>
       )}
       {tour && <TourMobileBookingBar departures={tour.departures} />}
     </div>

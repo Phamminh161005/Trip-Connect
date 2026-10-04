@@ -34,6 +34,7 @@ export function BookingDetailView({
   actions,
   refundActions,
   passengerAction,
+  children,
   onHoldExpire,
   staff = false,
 }: {
@@ -46,6 +47,8 @@ export function BookingDetailView({
   refundActions?: (refundId: number) => ReactNode;
   /** Nút cập nhật danh sách hành khách (khách). */
   passengerAction?: ReactNode;
+  /** Khối riêng hiện ngay dưới các thông báo trạng thái (vd đánh giá chuyến đi của khách). */
+  children?: ReactNode;
   onHoldExpire?: () => void;
   staff?: boolean;
 }) {
@@ -95,6 +98,8 @@ export function BookingDetailView({
           </AlertDescription>
         </Alert>
       )}
+
+      {children}
 
       <Card className="overflow-hidden rounded-2xl py-0">
         <div className="grid sm:grid-cols-[220px_1fr]">

@@ -32,6 +32,8 @@ public final class BookingResponses {
             String customerName,
             String customerEmail,
             LocalDateTime holdExpiresAt,
+            /* Đơn hoàn thành, chưa đánh giá, còn trong hạn */
+            boolean canReview,
             LocalDateTime createdAt
     ) {
     }
@@ -96,6 +98,9 @@ public final class BookingResponses {
             /* Khách: được thanh toán tiếp / được hủy không */
             boolean canPay,
             boolean canCancel,
+            /* Đánh giá: id nếu đã viết; canReview = còn được viết mới */
+            Long reviewId,
+            boolean canReview,
             LocalDateTime createdAt
     ) {
     }
