@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileBadge } from "lucide-react";
+import { FileBadge, LayoutDashboard, Map, Ticket } from "lucide-react";
 import { AGENT_AREA_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-// TODO: Tour của tôi, Yêu cầu tư vấn, Doanh thu
-const ITEMS: { href: string; label: string; icon: typeof FileBadge; exact?: boolean }[] = [
+// TODO: Yêu cầu tư vấn, Doanh thu
+const ITEMS = [
+  { href: "/agent", label: "Tổng quan", icon: LayoutDashboard, exact: true },
+  { href: "/agent/tours", label: "Tour của tôi", icon: Map },
+  { href: "/agent/bookings", label: "Đơn đặt tour", icon: Ticket },
   { href: "/agent/profile", label: "Hồ sơ kinh doanh", icon: FileBadge },
 ];
 

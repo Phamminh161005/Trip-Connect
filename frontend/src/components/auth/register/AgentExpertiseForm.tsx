@@ -11,6 +11,7 @@ import { getLocations, getTourCategories } from "@/lib/api/catalog";
 import { cn } from "@/lib/utils";
 import { agentExpertiseSchema, type AgentExpertiseValues } from "@/lib/validation/auth";
 import { LocationMultiSelect } from "./LocationMultiSelect";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 interface AgentExpertiseFormProps {
   defaultValues?: Partial<AgentExpertiseValues>;
@@ -31,7 +32,7 @@ export function AgentExpertiseForm({ defaultValues, submitLabel, onBack, onSubmi
   });
 
   return (
-    <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
+    <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)}>
       <FieldGroup className="gap-6">
         <Controller
           control={form.control}

@@ -6,6 +6,7 @@ import { AgentBusinessFields } from "@/components/agent/AgentBusinessFields";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { agentBusinessSchema, type AgentBusinessValues } from "@/lib/validation/auth";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 interface AgentBusinessFormProps {
   defaultValues?: Partial<AgentBusinessValues>;
@@ -29,7 +30,7 @@ export function AgentBusinessForm({ defaultValues, onBack, onNext }: AgentBusine
   });
 
   return (
-    <form noValidate onSubmit={form.handleSubmit(onNext)}>
+    <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onNext)}>
       <FieldGroup className="gap-6">
         <AgentBusinessFields control={form.control} autoFocus />
         <p className="rounded-xl bg-accent/60 px-4 py-3 text-sm text-accent-foreground">

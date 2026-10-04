@@ -1317,6 +1317,1909 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "7. Agent - Tour (tourId=1: đổi số trong URL cho đúng)",
+      "item": [
+        {
+          "name": "Danh sách tour của tôi",
+          "_postman_id": "779ee064-d141-4ffb-bb89-9980481253d0",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours?status=&q=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": ""
+                },
+                {
+                  "key": "q",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tạo tour (trạng thái Nháp)",
+          "_postman_id": "7521b760-9ac7-412c-ae1b-8559aa5f7caf",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hạ Long – Lan Hạ 2N1Đ trên du thuyền 5 sao\",\n  \"categoryIds\": [\n    7,\n    20\n  ],\n  \"departureLocationId\": 1,\n  \"destinationIds\": [\n    14,\n    20\n  ],\n  \"durationDays\": 2,\n  \"durationNights\": 1,\n  \"highlights\": [\n    \"Du thuyền 5 sao, phòng có ban công riêng\",\n    \"Chèo kayak vịnh Lan Hạ\",\n    \"Lớp học nấu nem trên tàu\"\n  ],\n  \"itinerary\": [\n    {\n      \"title\": \"Hà Nội – Vịnh Lan Hạ – Chèo kayak\",\n      \"description\": \"08:00 xe đón tại phố cổ. 12:00 lên tàu, ăn trưa. 15:00 chèo kayak.\",\n      \"breakfast\": false,\n      \"lunch\": true,\n      \"dinner\": true,\n      \"accommodation\": \"Du thuyền Stellar\"\n    },\n    {\n      \"title\": \"Lan Hạ – Hà Nội\",\n      \"description\": \"Tập thái cực quyền trên boong, ăn sáng, trả phòng, về Hà Nội.\",\n      \"breakfast\": true,\n      \"lunch\": true,\n      \"dinner\": false,\n      \"accommodation\": null\n    }\n  ],\n  \"transportModes\": [\n    \"BUS\",\n    \"BOAT\"\n  ],\n  \"accommodationType\": \"CRUISE\",\n  \"meetingPoint\": \"Nhà hát Lớn Hà Nội hoặc đón tại khách sạn khu phố cổ\",\n  \"meetingTime\": \"07:30\",\n  \"includedServices\": [\n    \"Xe đưa đón Hà Nội – Hạ Long\",\n    \"1 đêm phòng đôi trên du thuyền\",\n    \"4 bữa ăn\",\n    \"Vé tham quan, kayak\",\n    \"Hướng dẫn viên, bảo hiểm du lịch\"\n  ],\n  \"excludedServices\": [\n    \"Thuế VAT\",\n    \"Đồ uống, chi tiêu cá nhân\"\n  ],\n  \"notes\": \"Mang CCCD bản gốc để làm thủ tục lên tàu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem chi tiết tour",
+          "_postman_id": "937a9877-fcd6-48ba-95af-b6033db83ec8",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sửa nội dung (tour đang bán -> về Nháp, phải gửi duyệt lại)",
+          "_postman_id": "05d1f68f-5af5-4597-9256-39f1f5868adb",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hạ Long – Lan Hạ 2N1Đ trên du thuyền 5 sao\",\n  \"categoryIds\": [\n    7,\n    20\n  ],\n  \"departureLocationId\": 1,\n  \"destinationIds\": [\n    14,\n    20\n  ],\n  \"durationDays\": 2,\n  \"durationNights\": 1,\n  \"highlights\": [\n    \"Du thuyền 5 sao, phòng có ban công riêng\",\n    \"Chèo kayak vịnh Lan Hạ\",\n    \"Lớp học nấu nem trên tàu\"\n  ],\n  \"itinerary\": [\n    {\n      \"title\": \"Hà Nội – Vịnh Lan Hạ – Chèo kayak\",\n      \"description\": \"08:00 xe đón tại phố cổ. 12:00 lên tàu, ăn trưa. 15:00 chèo kayak.\",\n      \"breakfast\": false,\n      \"lunch\": true,\n      \"dinner\": true,\n      \"accommodation\": \"Du thuyền Stellar\"\n    },\n    {\n      \"title\": \"Lan Hạ – Hà Nội\",\n      \"description\": \"Tập thái cực quyền trên boong, ăn sáng, trả phòng, về Hà Nội.\",\n      \"breakfast\": true,\n      \"lunch\": true,\n      \"dinner\": false,\n      \"accommodation\": null\n    }\n  ],\n  \"transportModes\": [\n    \"BUS\",\n    \"BOAT\"\n  ],\n  \"accommodationType\": \"CRUISE\",\n  \"meetingPoint\": \"Nhà hát Lớn Hà Nội hoặc đón tại khách sạn khu phố cổ\",\n  \"meetingTime\": \"07:30\",\n  \"includedServices\": [\n    \"Xe đưa đón Hà Nội – Hạ Long\",\n    \"1 đêm phòng đôi trên du thuyền\",\n    \"4 bữa ăn\",\n    \"Vé tham quan, kayak\",\n    \"Hướng dẫn viên, bảo hiểm du lịch\"\n  ],\n  \"excludedServices\": [\n    \"Thuế VAT\",\n    \"Đồ uống, chi tiêu cá nhân\"\n  ],\n  \"notes\": \"Mang CCCD bản gốc để làm thủ tục lên tàu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tải ảnh (JPG/PNG/WebP ≤5MB, 3-10 ảnh)",
+          "_postman_id": "f2274435-d98e-44be-b067-c657d211f162",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/images",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "images"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sắp xếp ảnh (ảnh đầu = ảnh bìa)",
+          "_postman_id": "1c3a9d00-3726-4d6f-a937-cdec373db70e",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/images/order",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "images",
+                "order"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageIds\": [\n    3,\n    1,\n    2\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa ảnh",
+          "_postman_id": "196d0b85-31d6-480b-beac-25367a4ef992",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/images/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "images",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tải file chương trình tour (PDF, không bắt buộc)",
+          "_postman_id": "a38b6cc0-bcdc-491d-ad13-a51d97d068db",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/itinerary-file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "itinerary-file"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Link xem file chương trình (5 phút)",
+          "_postman_id": "47afeb8b-9919-4c21-a092-9b6c1a0b1933",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/itinerary-file/url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "itinerary-file",
+                "url"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Gửi duyệt",
+          "_postman_id": "b866b3a8-05d2-417d-8f6c-37228a0e6c48",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "submit"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rút lại yêu cầu duyệt",
+          "_postman_id": "56d14602-8b4b-4e93-9953-201f157214a0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/withdraw",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "withdraw"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tạm ẩn",
+          "_postman_id": "bc560154-8c16-4f3c-9423-065d5e6fae86",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/hide",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "hide"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hiện lại",
+          "_postman_id": "68787b76-f763-4cb8-a9c2-e273cb1c2c07",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/unhide",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "unhide"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa tour (chỉ khi chưa có khách đặt)",
+          "_postman_id": "bf9f4cdf-9abc-41dc-82b0-a557e07028ea",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Thêm lịch khởi hành (cách hôm nay ≥3 ngày)",
+          "_postman_id": "76962c58-3ea2-4eac-a931-11d0efa9d354",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/departures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "departures"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-11-15\",\n  \"capacity\": 20,\n  \"adultPrice\": 3490000,\n  \"childPrice\": 2450000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sửa lịch khởi hành",
+          "_postman_id": "f5180197-d456-4b6f-9de3-5cd47b30b3fd",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/departures/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "departures",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-11-15\",\n  \"capacity\": 25,\n  \"adultPrice\": 3490000,\n  \"childPrice\": 2450000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ngừng bán lịch",
+          "_postman_id": "abdd3a8d-8b36-4f8b-81b5-1273a0747511",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/departures/1/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "departures",
+                "1",
+                "close"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mở bán lại lịch",
+          "_postman_id": "3ed607ea-b393-400d-b368-4a34211603cb",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/departures/1/reopen",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "departures",
+                "1",
+                "reopen"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hủy chuyến (khách được hoàn 100%)",
+          "_postman_id": "81d92c79-21ba-445a-b44c-32b7c667d0dc",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/departures/1/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "departures",
+                "1",
+                "cancel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Không đủ số khách tối thiểu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa lịch (chỉ khi chưa có khách)",
+          "_postman_id": "247fc694-0a3d-4863-b9b4-a58a547408b5",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/tours/1/departures/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "tours",
+                "1",
+                "departures",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Admin - Tour",
+      "item": [
+        {
+          "name": "Hàng chờ duyệt (cũ nhất lên đầu)",
+          "_postman_id": "41ec0535-dc38-4eda-865e-58f82fc8160e",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours?status=PENDING_APPROVAL&sort=submittedAt,asc&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING_APPROVAL"
+                },
+                {
+                  "key": "sort",
+                  "value": "submittedAt,asc"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tìm tour (tên tour / tên công ty; provider=AGENT|PLATFORM)",
+          "_postman_id": "ba6ce335-965c-4523-8dce-5cde9be3d523",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours?q=&provider=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": ""
+                },
+                {
+                  "key": "provider",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết tour",
+          "_postman_id": "bfebd00b-fd2d-4d3c-9dd5-2f14b8203c68",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Link xem file chương trình",
+          "_postman_id": "37b66423-74ba-4db5-8e0c-426505db963e",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1/itinerary-file/url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1",
+                "itinerary-file",
+                "url"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Duyệt tour",
+          "_postman_id": "0fc65cc6-545b-4834-a07f-34d45c8fce1b",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Yêu cầu chỉnh sửa",
+          "_postman_id": "d1cead13-c46a-44cf-9428-63755a9aab1f",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1/request-revision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1",
+                "request-revision"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Ảnh bìa bị mờ, vui lòng thay ảnh rõ nét hơn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đình chỉ tour",
+          "_postman_id": "1ad11631-7d36-4b30-9f39-1f5dd35937aa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1",
+                "suspend"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Nội dung quảng cáo không đúng thực tế\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bỏ đình chỉ",
+          "_postman_id": "73280887-4bf7-4b65-854e-1e3cb112febe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1/unsuspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1",
+                "unsuspend"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tạo tour của TripConnect",
+          "_postman_id": "a27e5b61-efb2-45ec-9d98-f753c124bdff",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hạ Long – Lan Hạ 2N1Đ trên du thuyền 5 sao\",\n  \"categoryIds\": [\n    7,\n    20\n  ],\n  \"departureLocationId\": 1,\n  \"destinationIds\": [\n    14,\n    20\n  ],\n  \"durationDays\": 2,\n  \"durationNights\": 1,\n  \"highlights\": [\n    \"Du thuyền 5 sao, phòng có ban công riêng\",\n    \"Chèo kayak vịnh Lan Hạ\",\n    \"Lớp học nấu nem trên tàu\"\n  ],\n  \"itinerary\": [\n    {\n      \"title\": \"Hà Nội – Vịnh Lan Hạ – Chèo kayak\",\n      \"description\": \"08:00 xe đón tại phố cổ. 12:00 lên tàu, ăn trưa. 15:00 chèo kayak.\",\n      \"breakfast\": false,\n      \"lunch\": true,\n      \"dinner\": true,\n      \"accommodation\": \"Du thuyền Stellar\"\n    },\n    {\n      \"title\": \"Lan Hạ – Hà Nội\",\n      \"description\": \"Tập thái cực quyền trên boong, ăn sáng, trả phòng, về Hà Nội.\",\n      \"breakfast\": true,\n      \"lunch\": true,\n      \"dinner\": false,\n      \"accommodation\": null\n    }\n  ],\n  \"transportModes\": [\n    \"BUS\",\n    \"BOAT\"\n  ],\n  \"accommodationType\": \"CRUISE\",\n  \"meetingPoint\": \"Nhà hát Lớn Hà Nội hoặc đón tại khách sạn khu phố cổ\",\n  \"meetingTime\": \"07:30\",\n  \"includedServices\": [\n    \"Xe đưa đón Hà Nội – Hạ Long\",\n    \"1 đêm phòng đôi trên du thuyền\",\n    \"4 bữa ăn\",\n    \"Vé tham quan, kayak\",\n    \"Hướng dẫn viên, bảo hiểm du lịch\"\n  ],\n  \"excludedServices\": [\n    \"Thuế VAT\",\n    \"Đồ uống, chi tiêu cá nhân\"\n  ],\n  \"notes\": \"Mang CCCD bản gốc để làm thủ tục lên tàu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Công khai tour của TripConnect (không qua duyệt)",
+          "_postman_id": "b27f4788-76c8-458d-80da-26762b459a81",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tours/1/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tours",
+                "1",
+                "publish"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Tour công khai (không cần đăng nhập)",
+      "item": [
+        {
+          "name": "Tìm tour (từ khóa không dấu, ghi lịch sử theo mã khách)",
+          "_postman_id": "9c1a43bc-5493-4136-bbf4-326d70865bf1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Visitor-Id",
+                "value": "0f8c2a6e-3c1b-4d7a-9e55-1a2b3c4d5e6f"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours?q=ha long&track=true&page=0&size=12",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "ha long"
+                },
+                {
+                  "key": "track",
+                  "value": "true"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tìm tour đủ bộ lọc",
+          "_postman_id": "8849321d-aaac-4f4b-a82d-57ca8a458834",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours?destinationId=14&dateFrom=2026-10-10&dateTo=2026-12-31&priceMin=3000000&priceMax=7000000&durationMin=2&durationMax=3&categoryIds=7,20&international=false&sort=PRICE_ASC",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "destinationId",
+                  "value": "14"
+                },
+                {
+                  "key": "dateFrom",
+                  "value": "2026-10-10"
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "priceMin",
+                  "value": "3000000"
+                },
+                {
+                  "key": "priceMax",
+                  "value": "7000000"
+                },
+                {
+                  "key": "durationMin",
+                  "value": "2"
+                },
+                {
+                  "key": "durationMax",
+                  "value": "3"
+                },
+                {
+                  "key": "categoryIds",
+                  "value": "7,20"
+                },
+                {
+                  "key": "international",
+                  "value": "false"
+                },
+                {
+                  "key": "sort",
+                  "value": "PRICE_ASC"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Điểm đến nổi bật",
+          "_postman_id": "3db040b7-1b72-413d-9817-7cc6580dce56",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours/destinations/popular?limit=8",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours",
+                "destinations",
+                "popular"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "8"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem chi tiết tour đang bán",
+          "_postman_id": "38eb2b88-0069-445e-9763-b3e97a376781",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Link tải file chương trình tour",
+          "_postman_id": "0c4049ba-ae9a-45df-94c0-78bfc921bd66",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tours/1/itinerary-file/url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tours",
+                "1",
+                "itinerary-file",
+                "url"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10. Lịch sử tìm kiếm (cần đăng nhập — dùng agentToken)",
+      "item": [
+        {
+          "name": "Gộp lịch sử lúc chưa đăng nhập vào tài khoản",
+          "_postman_id": "c47d0e02-c1f8-4bf2-98bf-7837b6455b0c",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "X-Visitor-Id",
+                "value": "0f8c2a6e-3c1b-4d7a-9e55-1a2b3c4d5e6f"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/search-history/claim",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me",
+                "search-history",
+                "claim"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tìm kiếm gần đây",
+          "_postman_id": "d169b9fc-1c63-47c8-a737-6a4e6069a92a",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/search-history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me",
+                "search-history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa một mục (id lấy từ danh sách)",
+          "_postman_id": "38b59342-78e9-4201-8bed-078628c25228",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/search-history/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me",
+                "search-history",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa toàn bộ lịch sử",
+          "_postman_id": "540255a9-f9d2-444b-81fc-47779bf83740",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/search-history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me",
+                "search-history"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11. Đặt tour + VNPay (đăng nhập Agent/khách — dùng agentToken; Agent không đặt được tour của chính mình)",
+      "item": [
+        {
+          "name": "Đặt tour (trả về paymentUrl — mở link này trên trình duyệt để thanh toán)",
+          "_postman_id": "a2835ddf-626b-4243-be35-a7f0b659a8b7",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"departureId\": 1,\n  \"contactName\": \"Nguyễn Văn A\",\n  \"contactPhone\": \"0912345678\",\n  \"contactEmail\": \"khach@example.com\",\n  \"note\": \"Ăn chay 1 suất\",\n  \"adults\": 2,\n  \"children\": 1,\n  \"infants\": 1,\n  \"passengers\": [\n    {\n      \"fullName\": \"Nguyễn Văn A\",\n      \"dateOfBirth\": \"1990-05-20\",\n      \"passportNumber\": null\n    },\n    {\n      \"fullName\": \"Trần Thị B\",\n      \"dateOfBirth\": \"1992-08-12\",\n      \"passportNumber\": null\n    },\n    {\n      \"fullName\": \"Nguyễn Bé C\",\n      \"dateOfBirth\": \"2018-03-01\",\n      \"passportNumber\": null\n    },\n    {\n      \"fullName\": \"Nguyễn Bé D\",\n      \"dateOfBirth\": \"2025-12-01\",\n      \"passportNumber\": null\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đơn đặt của tôi",
+          "_postman_id": "809dc8ed-c165-46c3-9884-9efbe145ffaa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings?status=&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Chi tiết đơn",
+          "_postman_id": "304c3c02-801b-4e10-a0e5-1b9ea2dd8e94",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cập nhật danh sách hành khách (được nhập thiếu; hạn chót: trước ngày đi 3 ngày)",
+          "_postman_id": "e5778caa-8685-4b1c-a5c7-af67416b3c94",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passengers\": [\n    {\n      \"fullName\": \"Nguyễn Văn A\",\n      \"dateOfBirth\": \"1990-05-20\",\n      \"passportNumber\": null\n    },\n    {\n      \"fullName\": \"Nguyễn Bé C\",\n      \"dateOfBirth\": \"2018-03-01\",\n      \"passportNumber\": null\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1/passengers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1",
+                "passengers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Thanh toán lại (link VNPay mới, khi còn hạn giữ chỗ)",
+          "_postman_id": "9e635369-ec12-4c88-893b-c990d2e6e744",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1",
+                "pay"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem trước số tiền được hoàn nếu hủy",
+          "_postman_id": "3a7ba633-f79a-4647-87c6-59af1339eb5f",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1/cancellation-quote",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1",
+                "cancellation-quote"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hủy đơn",
+          "_postman_id": "e766b961-7937-4ce2-8354-226cf2cbd37f",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/1/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "1",
+                "cancel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Bận việc đột xuất\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12. Quản lý đơn (Agent / Admin)",
+      "item": [
+        {
+          "name": "Agent: đơn đặt các tour của tôi",
+          "_postman_id": "dc67cf92-6590-4f9c-9c65-62034f0283ab",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/bookings?status=&q=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": ""
+                },
+                {
+                  "key": "q",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agent: danh sách đoàn của một lịch khởi hành",
+          "_postman_id": "678040e9-aa5a-4e89-995b-c05d9af6e70c",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agent/bookings/departures/1/manifest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agent",
+                "bookings",
+                "departures",
+                "1",
+                "manifest"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: mọi đơn (refundStatus=MANUAL_REQUIRED = cần hoàn thủ công)",
+          "_postman_id": "bfdb2ae0-0785-4f9c-80da-75bb6839d469",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bookings?status=&refundStatus=&q=&page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": ""
+                },
+                {
+                  "key": "refundStatus",
+                  "value": ""
+                },
+                {
+                  "key": "q",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: chi tiết đơn (kèm giao dịch VNPay, hoàn tiền)",
+          "_postman_id": "e5b71b03-bc1a-4f64-8be0-dfb82e1520d2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bookings/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: hủy vì bất khả kháng (hoàn 100%)",
+          "_postman_id": "709acec7-1f79-4001-9884-15ba8cd8d838",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bookings/1/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings",
+                "1",
+                "cancel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Bão số 5, cấm tàu ra vịnh\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: thử hoàn lại qua VNPay",
+          "_postman_id": "fa33e20d-400b-4450-998d-7873068368bb",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/refunds/1/retry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "refunds",
+                "1",
+                "retry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: xác nhận đã hoàn thủ công",
+          "_postman_id": "6cd7d204-582c-4e2d-95c7-c90e928ba471",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/refunds/1/mark-done",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "refunds",
+                "1",
+                "mark-done"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"CK Vietcombank ref 123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "13. Thông báo trên web (đăng nhập bất kỳ — mẫu dùng agentToken)",
+      "item": [
+        {
+          "name": "Danh sách (mới nhất trước; trang sau: before = nextCursor)",
+          "_postman_id": "54f589d5-b4a5-484c-aa1c-4b2c64db8cfe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications?size=20&unread=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "unread",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Số chưa đọc",
+          "_postman_id": "9b73c3b5-dc4f-4807-bffb-df390b537229",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "unread-count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đánh dấu đã đọc 1 thông báo",
+          "_postman_id": "0e5b4789-5cf2-450f-a6d8-bbfdaec40952",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/1/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "1",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đánh dấu tất cả đã đọc",
+          "_postman_id": "84f952c4-8f8a-4de8-bd3e-1ad364ee8de4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "read-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

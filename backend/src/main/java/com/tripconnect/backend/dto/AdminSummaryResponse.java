@@ -5,6 +5,9 @@ public record AdminSummaryResponse(
         long pendingAgentProfiles,
         long pendingChangeRequests,
         long totalUsers,
-        long approvedAgents
+        long approvedAgents,
+        long pendingTours,
+        /* Đơn cần Admin hoàn tiền thủ công (VNPay báo lỗi) */
+        long manualRefunds
 ) {
 }

@@ -85,6 +85,8 @@ public class AgentAdminService {
 
         eventPublisher.publishEvent(new NotificationEvents.UserEmailEvent(
                 profile.getUser().getEmail(), EmailTemplates.agentProfileApproved()));
+        eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(
+                profile.getUser().getId(), WebNotifications.agentProfileApproved()));
     }
 
     @Transactional
@@ -98,6 +100,8 @@ public class AgentAdminService {
 
         eventPublisher.publishEvent(new NotificationEvents.UserEmailEvent(
                 profile.getUser().getEmail(), EmailTemplates.agentProfileNeedsRevision(reason.trim())));
+        eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(
+                profile.getUser().getId(), WebNotifications.agentProfileNeedsRevision(reason.trim())));
     }
 
     private void markReviewed(AgentProfile profile, Long adminId) {

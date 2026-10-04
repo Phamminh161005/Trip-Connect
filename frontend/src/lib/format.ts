@@ -28,6 +28,19 @@ export function formatDate(iso: string | null | undefined): string {
   return `${p.day}/${p.month}/${p.year}`;
 }
 
+/** Ví dụ: "Vừa xong", "5 phút trước", "3 giờ trước", "Hôm qua", "4 ngày trước"; cũ hơn 1 tuần thì ghi ngày. */
+export function formatRelative(iso: string, now: number = Date.now()): string {
+  const minutes = Math.floor((now - new Date(iso).getTime()) / 60_000);
+  if (minutes < 1) return "Vừa xong";
+  if (minutes < 60) return `${minutes} phút trước`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Hôm qua";
+  if (days < 7) return `${days} ngày trước`;
+  return formatDate(iso);
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;

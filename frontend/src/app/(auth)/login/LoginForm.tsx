@@ -23,6 +23,7 @@ import { safeRedirect } from "@/lib/auth/redirect";
 import { applyApiError } from "@/lib/form/applyApiError";
 import { loginSchema, type LoginValues } from "@/lib/validation/auth";
 import type { UserProfileResponse } from "@/types/auth";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 const REASON_MESSAGES: Record<string, string> = {
   "password-changed": "Đổi mật khẩu thành công. Vui lòng đăng nhập lại bằng mật khẩu mới.",
@@ -143,7 +144,7 @@ export function LoginForm({ redirectTo, initialEmail, reason }: LoginFormProps) 
         </Alert>
       )}
 
-      <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
+      <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup className="gap-4">
           <TextField control={form.control} name="email" label="Email" type="email" autoComplete="email" autoFocus={!initialEmail} />
           <TextField

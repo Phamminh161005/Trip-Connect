@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import * as authApi from "@/lib/api/auth";
+import { claimSearchHistory } from "@/lib/api/search";
 import { onSessionExpired, refreshAccessToken } from "@/lib/api/client";
 import { setAccessToken } from "@/lib/tokenStore";
 import type { GoogleLoginRequest, LoginRequest, UserProfileResponse } from "@/types/auth";
@@ -43,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const me = await authApi.getMe();
     setUser(me);
     setStatus("authenticated");
+    // Gộp lịch sử tìm kiếm lúc chưa đăng nhập vào tài khoản (chạy ngầm; lỗi cũng không ảnh hưởng đăng nhập)
+    claimSearchHistory().catch(() => {});
     return me;
   }, []);
 

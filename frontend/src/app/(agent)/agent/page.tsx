@@ -1,6 +1,8 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { AgentDashboard } from "./AgentDashboard";
 
-// TODO: trang tổng quan (doanh thu, đơn đặt, yêu cầu tư vấn). Tạm chuyển tới Hồ sơ kinh doanh.
+export const metadata: Metadata = { title: "Tổng quan kinh doanh" };
+
 export default function AgentHomePage() {
-  redirect("/agent/profile");
+  return <AgentDashboard />;
 }

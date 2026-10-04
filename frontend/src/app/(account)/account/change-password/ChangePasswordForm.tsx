@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { applyApiError } from "@/lib/form/applyApiError";
 import { changePasswordSchema, type ChangePasswordValues } from "@/lib/validation/auth";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 export function ChangePasswordForm() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export function ChangePasswordForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
+        <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup className="max-w-md gap-5">
             <TextField control={form.control} name="oldPassword" label="Mật khẩu hiện tại" type="password" autoComplete="current-password" />
             <TextField

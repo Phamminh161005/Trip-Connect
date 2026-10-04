@@ -17,6 +17,7 @@ import { forgotPassword, resetPassword } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/errors";
 import { applyApiError } from "@/lib/form/applyApiError";
 import { resetPasswordSchema, type ResetPasswordValues } from "@/lib/validation/auth";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 export function ResetPasswordForm({ initialEmail }: { initialEmail?: string }) {
   const router = useRouter();
@@ -66,7 +67,7 @@ export function ResetPasswordForm({ initialEmail }: { initialEmail?: string }) {
         </>
       }
     >
-      <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
+      <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup className="gap-4">
           <OtpField control={form.control} name="otp" />
           <TextField

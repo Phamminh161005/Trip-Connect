@@ -3,6 +3,7 @@ package com.tripconnect.backend.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -68,6 +69,10 @@ public class SecurityConfig {
                         // bị biến thành 401 và Frontend tưởng nhầm là hết phiên đăng nhập
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/locations/**", "/api/tour-categories/**", "/api/banks/**").permitAll()
+                        // Khách chưa đăng nhập vẫn xem được tour đang bán
+                        .requestMatchers(HttpMethod.GET, "/api/tours/**").permitAll()
+                        // VNPay gửi kết quả thanh toán (tin cậy nhờ chữ ký, không cần đăng nhập)
+                        .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/agent/**").hasRole("AGENT")
                         .anyRequest().authenticated()

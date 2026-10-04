@@ -78,7 +78,7 @@ public class DataSeeder implements CommandLineRunner {
                         continue; // Việt Nam đã được thêm chi tiết theo từng tỉnh/thành ở trên
                     }
                     Location location = new Location();
-                    location.setCountry(entry.country());
+                    location.setCountry(CountryNames.toVietnamese(entry.country()));
                     location.setProvince(null);
                     locations.add(location);
                 }

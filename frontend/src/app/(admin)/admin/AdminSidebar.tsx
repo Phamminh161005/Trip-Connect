@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, FilePen, LayoutDashboard, Store, Users } from "lucide-react";
+import { ArrowLeft, FilePen, LayoutDashboard, Map, Store, Ticket, Users } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ADMIN_AREA_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useAdminSummary } from "./adminQueries";
 
-type CountKey = "pendingAgentProfiles" | "pendingChangeRequests";
+type CountKey = "pendingAgentProfiles" | "pendingChangeRequests" | "pendingTours" | "manualRefunds";
 
 const ITEMS: { href: string; label: string; icon: typeof Users; exact?: boolean; count?: CountKey }[] = [
   { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
   { href: "/admin/agents", label: "Hồ sơ đối tác", icon: Store, count: "pendingAgentProfiles" },
   { href: "/admin/change-requests", label: "Yêu cầu cập nhật", icon: FilePen, count: "pendingChangeRequests" },
+  { href: "/admin/tours", label: "Tour", icon: Map, count: "pendingTours" },
+  { href: "/admin/bookings", label: "Đơn đặt tour", icon: Ticket, count: "manualRefunds" },
   { href: "/admin/users", label: "Người dùng", icon: Users },
 ];
 

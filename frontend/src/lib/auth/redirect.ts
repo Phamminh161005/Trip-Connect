@@ -18,4 +18,4 @@ export function loginUrl(redirectTo?: string): string {
 export const AUTH_PAGES = ["/login", "/register"];
 
 /** Tiền tố các trang bắt buộc đăng nhập. */
-export const PROTECTED_PREFIXES = ["/account", "/agent", "/admin"];
+export const PROTECTED_PREFIXES = ["/account", "/agent", "/admin", "/notifications"];

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { KeyRound, UserRound } from "lucide-react";
+import { Bell, KeyRound, Ticket, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
+  { href: "/notifications", label: "Thông báo", icon: Bell },
+  { href: "/account/bookings", label: "Đơn đặt của tôi", icon: Ticket },
   { href: "/account", label: "Thông tin cá nhân", icon: UserRound },
   { href: "/account/change-password", label: "Đổi mật khẩu", icon: KeyRound },
 ];

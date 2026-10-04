@@ -28,6 +28,7 @@ import { AGENT_PROFILE_KEY } from "../useAgentProfile";
 import { CHANGE_REQUESTS_KEY } from "../ChangeRequestHistory";
 import { changeRequestSchema, type ChangeRequestValues } from "./changeRequestSchema";
 import { StagedFilePicker } from "./StagedFilePicker";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 type RequiredType = (typeof REQUIRED_DOCUMENTS)[number]["type"];
 
@@ -133,7 +134,7 @@ export function ChangeRequestForm({ profile }: { profile: AgentProfileResponse }
   };
 
   return (
-    <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       {/* ----- Thông tin doanh nghiệp ----- */}
       <Card className="rounded-2xl">
         <CardHeader>

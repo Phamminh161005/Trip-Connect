@@ -12,11 +12,14 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ className }: { className?: string }) {
+/** @param inverted chữ trắng — dùng khi đặt trên ảnh nền tối */
+export function Logo({ className, inverted = false }: { className?: string; inverted?: boolean }) {
   return (
     <Link href="/" className={cn("flex items-center gap-2 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50", className)}>
-      <LogoMark />
-      <span className="text-xl font-bold tracking-tight text-primary">TripConnect</span>
+      <LogoMark className={cn("transition-colors", inverted && "text-white")} />
+      <span className={cn("text-xl font-bold tracking-tight text-primary transition-colors", inverted && "text-white")}>
+        TripConnect
+      </span>
     </Link>
   );
 }

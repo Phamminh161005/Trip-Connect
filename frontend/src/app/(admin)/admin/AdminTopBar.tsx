@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { NotificationBell } from "@/components/notification/NotificationBell";
 import { ADMIN_AREA_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useAdminNavItems } from "./AdminSidebar";
@@ -17,7 +18,10 @@ export function AdminTopBar() {
           <Logo />
         </div>
         <p className="hidden font-semibold lg:block">{ADMIN_AREA_NAME}</p>
-        <UserMenu />
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <UserMenu />
+        </div>
       </div>
       <nav aria-label={ADMIN_AREA_NAME} className="flex gap-1 overflow-x-auto px-4 pb-2 lg:hidden">
         {items.map(({ href, label, active, badge }) => (

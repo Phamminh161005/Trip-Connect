@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { applyApiError } from "@/lib/form/applyApiError";
 import { profileSchema, type ProfileValues } from "@/lib/validation/auth";
 import type { UserRole } from "@/types/auth";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 const ROLE_LABELS: Record<UserRole, string> = {
   CUSTOMER: "Khách du lịch",
@@ -52,7 +53,7 @@ export function ProfileForm() {
         <CardDescription>Thông tin này được dùng khi bạn đặt tour và liên hệ với đối tác.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
+        <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup className="gap-5">
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>

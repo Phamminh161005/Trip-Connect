@@ -17,6 +17,7 @@ import com.tripconnect.backend.repository.AgentDocumentRepository;
 import com.tripconnect.backend.repository.AgentProfileRepository;
 import com.tripconnect.backend.service.EmailTemplates;
 import com.tripconnect.backend.service.NotificationEvents;
+import com.tripconnect.backend.service.WebNotifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -145,9 +146,8 @@ public class AgentProfileService {
         profile.setStatus(AgentStatus.PENDING_APPROVAL);
         profile.setSubmittedAt(LocalDateTime.now());
 
-        User user = profile.getUser();
-        eventPublisher.publishEvent(new NotificationEvents.AdminEmailEvent(
-                EmailTemplates.agentProfileSubmitted(profile.getCompanyName(), user.getEmail(), resubmission)));
+        eventPublisher.publishEvent(new NotificationEvents.AdminWebEvent(
+                WebNotifications.agentProfileSubmitted(profile.getId(), profile.getCompanyName(), resubmission)));
         return assembler.toResponse(profile);
     }
 

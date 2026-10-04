@@ -7,6 +7,8 @@ export interface AdminSummaryResponse {
   pendingChangeRequests: number;
   totalUsers: number;
   approvedAgents: number;
+  pendingTours: number;
+  manualRefunds: number;
 }
 
 /** Một dòng trong danh sách hồ sơ đối tác. */

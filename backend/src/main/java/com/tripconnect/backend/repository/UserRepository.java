@@ -27,4 +27,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query("select u.email from User u where u.role = :role and u.active = true")
     List<String> findActiveEmailsByRole(@Param("role") UserRole role);
+
+    @Query("select u.id from User u where u.role = :role and u.active = true")
+    List<Long> findActiveIdsByRole(@Param("role") UserRole role);
 }

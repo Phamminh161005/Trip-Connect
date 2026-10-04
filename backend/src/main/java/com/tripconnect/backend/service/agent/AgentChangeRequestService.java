@@ -19,6 +19,7 @@ import com.tripconnect.backend.repository.AgentProfileRepository;
 import com.tripconnect.backend.repository.UserRepository;
 import com.tripconnect.backend.service.EmailTemplates;
 import com.tripconnect.backend.service.NotificationEvents;
+import com.tripconnect.backend.service.WebNotifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
@@ -125,8 +126,8 @@ public class AgentChangeRequestService {
                     file, mimeTypes.get(file));
         }
 
-        eventPublisher.publishEvent(new NotificationEvents.AdminEmailEvent(
-                EmailTemplates.agentChangeRequestSubmitted(profile.getCompanyName(), profile.getUser().getEmail())));
+        eventPublisher.publishEvent(new NotificationEvents.AdminWebEvent(
+                WebNotifications.changeRequestSubmitted(request.getId(), profile.getCompanyName())));
         return assembler.toChangeRequestResponse(request);
     }
 
@@ -196,6 +197,8 @@ public class AgentChangeRequestService {
         markReviewed(request, ChangeRequestStatus.APPROVED, adminId, null);
         eventPublisher.publishEvent(new NotificationEvents.UserEmailEvent(
                 profile.getUser().getEmail(), EmailTemplates.agentChangeRequestApproved()));
+        eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(
+                profile.getUser().getId(), WebNotifications.changeRequestApproved()));
     }
 
     @Transactional
@@ -205,8 +208,11 @@ public class AgentChangeRequestService {
 
         markReviewed(request, ChangeRequestStatus.REJECTED, adminId, reason.trim());
         discardPendingDocuments(request);
+        User agent = request.getAgentProfile().getUser();
         eventPublisher.publishEvent(new NotificationEvents.UserEmailEvent(
-                request.getAgentProfile().getUser().getEmail(), EmailTemplates.agentChangeRequestRejected(reason.trim())));
+                agent.getEmail(), EmailTemplates.agentChangeRequestRejected(reason.trim())));
+        eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(
+                agent.getId(), WebNotifications.changeRequestRejected(reason.trim())));
     }
 
     // ===================== Tiện ích =====================

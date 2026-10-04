@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CircleUserRound, KeyRound, LayoutDashboard, LogOut, Menu, Store, UserRound } from "lucide-react";
+import { CircleUserRound, Compass, KeyRound, LayoutDashboard, LogOut, Menu, Store, Ticket, UserRound } from "lucide-react";
 import { ADMIN_AREA_NAME, AGENT_AREA_NAME } from "@/lib/constants";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,12 +16,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { NAV_LINKS } from "./MainNav";
 
 function initials(fullName: string | null | undefined): string {
   if (!fullName) return "?";
   const words = fullName.trim().split(/\s+/);
   // Tên người Việt: lấy chữ cái đầu của tên (từ cuối cùng)
   return words[words.length - 1].charAt(0).toUpperCase();
+}
+
+/** Trên điện thoại menu giữa header bị ẩn -> đưa các link khám phá tour vào đây. */
+function MobileNavItems() {
+  return (
+    <>
+      {NAV_LINKS.map((link) => (
+        <DropdownMenuItem key={link.href} asChild className="md:hidden">
+          <Link href={link.href}>
+            <Compass /> {link.label}
+          </Link>
+        </DropdownMenuItem>
+      ))}
+      <DropdownMenuSeparator className="md:hidden" />
+    </>
+  );
+}
+
+/** Tên gọi ngắn: từ cuối của họ tên (tên riêng). */
+function givenName(fullName: string | null | undefined): string {
+  if (!fullName) return "";
+  const words = fullName.trim().split(/s+/);
+  return words[words.length - 1];
 }
 
 const triggerClass =
@@ -43,6 +67,7 @@ export function UserMenu() {
           <CircleUserRound className="size-7 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
+          <MobileNavItems />
           <DropdownMenuItem asChild className="font-semibold">
             <Link href="/login">Đăng nhập</Link>
           </DropdownMenuItem>
@@ -74,6 +99,7 @@ export function UserMenu() {
             {initials(user.fullName)}
           </AvatarFallback>
         </Avatar>
+        <span className="hidden max-w-28 truncate pr-1.5 text-sm font-semibold lg:block">{givenName(user.fullName)}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="flex flex-col gap-0.5">
@@ -81,6 +107,7 @@ export function UserMenu() {
           <span className="truncate text-xs font-normal text-muted-foreground">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <MobileNavItems />
         {user.role === "ADMIN" && (
           <>
             <DropdownMenuItem asChild>
@@ -101,6 +128,13 @@ export function UserMenu() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
+        )}
+        {user.role !== "ADMIN" && (
+          <DropdownMenuItem asChild>
+            <Link href="/account/bookings">
+              <Ticket /> Đơn đặt của tôi
+            </Link>
+          </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
           <Link href="/account">

@@ -15,6 +15,7 @@ import { agentBusinessSchema, type AgentBusinessValues } from "@/lib/validation/
 import type { AgentProfileResponse } from "@/types/agent";
 import { ChangeRequestButton } from "./ChangeRequestButton";
 import { useSetAgentProfile } from "./useAgentProfile";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 function toFormValues(profile: AgentProfileResponse): Partial<AgentBusinessValues> {
   return {
@@ -98,7 +99,7 @@ function BusinessInfoForm({ profile, onDone }: { profile: AgentProfileResponse; 
   };
 
   return (
-    <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <AgentBusinessFields control={form.control} autoFocus />
       <div className="flex gap-3">
         <Button type="button" variant="outline" className="h-11 rounded-xl px-5" onClick={onDone} disabled={form.formState.isSubmitting}>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FilePen, Store, UserCheck, Users } from "lucide-react";
+import { ArrowRight, FilePen, Map, Store, Ticket, UserCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +36,22 @@ const CARDS: {
     icon: FilePen,
     todo: true,
   },
+  {
+    key: "pendingTours",
+    label: "Tour chờ duyệt",
+    hint: "Tour mới hoặc tour vừa được chỉnh sửa",
+    href: "/admin/tours",
+    icon: Map,
+    todo: true,
+  },
+  {
+    key: "manualRefunds",
+    label: "Đơn cần hoàn tiền thủ công",
+    hint: "VNPay hoàn tự động không thành công",
+    href: "/admin/bookings?status=MANUAL_REFUND",
+    icon: Ticket,
+    todo: true,
+  },
   { key: "approvedAgents", label: "Đối tác đang hoạt động", hint: "Hồ sơ đã được duyệt", href: "/admin/agents?status=APPROVED", icon: UserCheck },
   { key: "totalUsers", label: "Tổng số tài khoản", hint: "Khách hàng, đối tác, quản trị", href: "/admin/users", icon: Users },
 ];
@@ -53,7 +69,7 @@ export function AdminDashboard() {
       {error ? (
         <p className="text-sm text-destructive">{errorMessage(error)}</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {CARDS.map(({ key, label, hint, href, icon: Icon, todo }) => {
             const value = data?.[key] ?? 0;
             const highlight = todo && value > 0;

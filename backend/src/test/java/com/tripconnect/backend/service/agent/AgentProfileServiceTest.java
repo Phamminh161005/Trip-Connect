@@ -81,7 +81,7 @@ class AgentProfileServiceTest {
 
         assertThat(profile.getStatus()).isEqualTo(AgentStatus.PENDING_APPROVAL);
         assertThat(profile.getSubmittedAt()).isNotNull();
-        verify(eventPublisher).publishEvent(any(NotificationEvents.AdminEmailEvent.class));
+        verify(eventPublisher).publishEvent(any(NotificationEvents.AdminWebEvent.class));
     }
 
     @Test

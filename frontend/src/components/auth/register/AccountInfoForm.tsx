@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { accountInfoSchema, type AccountInfoValues } from "@/lib/validation/auth";
+import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 
 interface AccountInfoFormProps {
   defaultValues?: Partial<AccountInfoValues>;
@@ -29,7 +30,7 @@ export function AccountInfoForm({ defaultValues, submitLabel, emailError, onSubm
   }, [emailError, form]);
 
   return (
-    <form noValidate onSubmit={form.handleSubmit((values) => onSubmit(values, form.setError))}>
+    <form noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit((values) => onSubmit(values, form.setError))}>
       <FieldGroup className="gap-4">
         <TextField control={form.control} name="fullName" label="Họ và tên" autoComplete="name" autoFocus />
         <TextField control={form.control} name="email" label="Email" type="email" autoComplete="email" />
