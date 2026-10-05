@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CircleUserRound, Compass, KeyRound, LayoutDashboard, LogOut, Menu, Store, Ticket, UserRound } from "lucide-react";
+import { CircleUserRound, Compass, KeyRound, LayoutDashboard, LogOut, Menu, Sparkles, Store, Ticket, UserRound } from "lucide-react";
 import { ADMIN_AREA_NAME, AGENT_AREA_NAME } from "@/lib/constants";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { NAV_LINKS } from "./MainNav";
+import { CUSTOM_TOUR_LINK, NAV_LINKS, useShowCustomTourLink } from "./MainNav";
 
 function initials(fullName: string | null | undefined): string {
   if (!fullName) return "?";
@@ -27,6 +27,7 @@ function initials(fullName: string | null | undefined): string {
 
 /** Trên điện thoại menu giữa header bị ẩn -> đưa các link khám phá tour vào đây. */
 function MobileNavItems() {
+  const showCustomTour = useShowCustomTourLink();
   return (
     <>
       {NAV_LINKS.map((link) => (
@@ -36,6 +37,13 @@ function MobileNavItems() {
           </Link>
         </DropdownMenuItem>
       ))}
+      {showCustomTour && (
+        <DropdownMenuItem asChild className="md:hidden">
+          <Link href={CUSTOM_TOUR_LINK.href}>
+            <Sparkles /> {CUSTOM_TOUR_LINK.label}
+          </Link>
+        </DropdownMenuItem>
+      )}
       <DropdownMenuSeparator className="md:hidden" />
     </>
   );
@@ -44,7 +52,7 @@ function MobileNavItems() {
 /** Tên gọi ngắn: từ cuối của họ tên (tên riêng). */
 function givenName(fullName: string | null | undefined): string {
   if (!fullName) return "";
-  const words = fullName.trim().split(/s+/);
+  const words = fullName.trim().split(/\s+/);
   return words[words.length - 1];
 }
 

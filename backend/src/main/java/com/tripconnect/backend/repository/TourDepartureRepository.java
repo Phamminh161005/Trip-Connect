@@ -38,7 +38,7 @@ public interface TourDepartureRepository extends JpaRepository<TourDeparture, Lo
                                @Param("cancelled") DepartureStatus cancelled,
                                @Param("excludeId") Long excludeId);
 
-    /** Giá thấp nhất + số lịch đang mở bán của nhiều tour — dùng cho danh sách tour ("Từ 3.490.000đ"). */
+    /** Giá thấp nhất + số lịch đang mở bán của nhiều tour — dùng cho danh sách tour ("Từ 3.490.000 VNĐ"). */
     @Query("""
             select d.tour.id as tourId, min(d.adultPrice) as minAdultPrice, count(d) as openCount
             from TourDeparture d

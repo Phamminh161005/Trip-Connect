@@ -19,6 +19,7 @@ export function ReasonDialog({
   placeholder,
   confirmLabel,
   hint = "Nội dung này được gửi kèm trong email tới người dùng.",
+  emptyMessage = "Vui lòng nhập lý do",
   onConfirm,
 }: {
   open: boolean;
@@ -30,6 +31,7 @@ export function ReasonDialog({
   confirmLabel: string;
   /** Dòng gợi ý dưới ô nhập. */
   hint?: string;
+  emptyMessage?: string;
   /** Lỗi thì ném ra để hộp thoại giữ nguyên, người dùng sửa và thử lại. */
   onConfirm: (reason: string) => Promise<void>;
 }) {
@@ -48,7 +50,7 @@ export function ReasonDialog({
 
   const submit = async () => {
     const trimmed = reason.trim();
-    if (!trimmed) return setError("Vui lòng nhập lý do");
+    if (!trimmed) return setError(emptyMessage);
     if (trimmed.length > MAX_LENGTH) return setError(`Tối đa ${MAX_LENGTH} ký tự`);
     setPending(true);
     try {

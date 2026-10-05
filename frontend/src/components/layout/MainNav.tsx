@@ -9,6 +9,7 @@ import { ArrowRight, ChevronDown, MapPin } from "lucide-react";
 import { locationLabel } from "@/components/auth/register/LocationMultiSelect";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getPopularDestinations } from "@/lib/api/search";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { cn } from "@/lib/utils";
 
 export const NAV_LINKS = [
@@ -16,6 +17,14 @@ export const NAV_LINKS = [
   { href: "/tours?international=false", label: "Trong nước", international: "false" },
   { href: "/tours?international=true", label: "Quốc tế", international: "true" },
 ] as const;
+
+export const CUSTOM_TOUR_LINK = { href: "/custom-tour", label: "Tour theo yêu cầu" } as const;
+
+/** Tour theo yêu cầu chỉ dành cho khách hàng: khách vãng lai vẫn thấy link, Agent / Admin thì không. */
+export function useShowCustomTourLink(): boolean {
+  const { user } = useAuth();
+  return !user || user.role === "CUSTOMER";
+}
 
 const itemClass = (inverted: boolean, active: boolean) =>
   cn(
@@ -38,6 +47,7 @@ export function MainNav({ inverted }: { inverted: boolean }) {
         <NavLinksWithActive inverted={inverted} />
       </Suspense>
       <DestinationsMenu inverted={inverted} />
+      <CustomTourLink inverted={inverted} />
     </nav>
   );
 }
@@ -60,6 +70,16 @@ function NavLinks({ inverted, activeKey }: { inverted: boolean; activeKey: strin
       {link.label}
     </Link>
   ));
+}
+
+function CustomTourLink({ inverted }: { inverted: boolean }) {
+  const active = usePathname() === CUSTOM_TOUR_LINK.href;
+  if (!useShowCustomTourLink()) return null;
+  return (
+    <Link href={CUSTOM_TOUR_LINK.href} aria-current={active ? "page" : undefined} className={itemClass(inverted, active)}>
+      {CUSTOM_TOUR_LINK.label}
+    </Link>
+  );
 }
 
 function DestinationsMenu({ inverted }: { inverted: boolean }) {

@@ -8,6 +8,8 @@ public record AdminSummaryResponse(
         long approvedAgents,
         long pendingTours,
         /* Đơn cần Admin hoàn tiền thủ công (VNPay báo lỗi) */
-        long manualRefunds
+        long manualRefunds,
+        /* Yêu cầu thiết kế tour đang chờ giao cho Agent */
+        long pendingCustomRequests
 ) {
 }

@@ -23,6 +23,12 @@ public interface AgentProfileRepository extends JpaRepository<AgentProfile, Long
 
     Optional<AgentProfile> findByUserId(Long userId);
 
+    /** Agent có thể nhận yêu cầu thiết kế tour: đã duyệt, đang bật "Nhận yêu cầu", tài khoản còn hoạt động. */
+    @EntityGraph(attributePaths = "user")
+    @Query("select p from AgentProfile p where p.status = com.tripconnect.backend.enums.AgentStatus.APPROVED "
+            + "and p.isAcceptingRequests = true and p.user.active = true")
+    List<AgentProfile> findAcceptingRequests();
+
     /** Khóa hồ sơ khi cập nhật điểm đánh giá (2 đánh giá cùng lúc không ghi đè điểm của nhau). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from AgentProfile p where p.user.id = :userId")

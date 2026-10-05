@@ -2,21 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, KeyRound, Ticket, UserRound } from "lucide-react";
+import { Bell, KeyRound, Sparkles, Ticket, UserRound } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/notifications", label: "Thông báo", icon: Bell },
   { href: "/account/bookings", label: "Đơn đặt của tôi", icon: Ticket },
+  { href: "/account/requests", label: "Yêu cầu tour riêng", icon: Sparkles, customerOnly: true },
   { href: "/account", label: "Thông tin cá nhân", icon: UserRound },
   { href: "/account/change-password", label: "Đổi mật khẩu", icon: KeyRound },
 ];
 
 export function AccountNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const items = ITEMS.filter((item) => !("customerOnly" in item) || user?.role === "CUSTOMER");
   return (
     <nav aria-label="Tài khoản" className="flex gap-1 overflow-x-auto md:flex-col">
-      {ITEMS.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label, icon: Icon }) => {
         const active = href === "/account" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link

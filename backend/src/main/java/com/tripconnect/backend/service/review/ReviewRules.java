@@ -3,9 +3,9 @@ package com.tripconnect.backend.service.review;
 import com.tripconnect.backend.entity.Booking;
 import com.tripconnect.backend.entity.Review;
 import com.tripconnect.backend.enums.BookingStatus;
+import com.tripconnect.backend.service.DisplayNames;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 
 /** Quy tắc đánh giá (không truy cập DB). */
 public final class ReviewRules {
@@ -33,14 +33,8 @@ public final class ReviewRules {
         return !review.isHidden() && now.isBefore(editableUntil(review));
     }
 
-    /** "Phạm Văn Minh" -> "Phạm V. Minh"; giữ họ và tên, tên đệm chỉ lấy chữ cái đầu. */
+    /** Tên người đánh giá hiện trên trang tour, vd "Phạm V. Minh". */
     public static String displayName(String fullName) {
-        if (fullName == null || fullName.isBlank()) return "Khách hàng";
-        String[] words = fullName.trim().split("\\s+");
-        if (words.length <= 2) return String.join(" ", words);
-        String middle = Arrays.stream(words, 1, words.length - 1)
-                .map(w -> w.substring(0, 1).toUpperCase() + ".")
-                .reduce((a, b) -> a + " " + b).orElse("");
-        return words[0] + " " + middle + " " + words[words.length - 1];
+        return DisplayNames.masked(fullName);
     }
 }

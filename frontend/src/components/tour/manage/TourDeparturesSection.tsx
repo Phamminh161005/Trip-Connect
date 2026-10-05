@@ -39,6 +39,7 @@ import type { TourDeparture, TourDetail } from "@/types/tour";
 import { DepartureStatusBadge } from "../TourStatusBadge";
 import { useTourRefresh } from "./tourQueries";
 import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
+import { revalidateTouched } from "@/lib/form/revalidateTouched";
 
 type Action = { kind: "delete" | "cancel"; departure: TourDeparture } | null;
 
@@ -346,7 +347,17 @@ function DepartureDialog({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="adultPrice">Giá người lớn</FieldLabel>
-                <PriceInput id="adultPrice" value={field.value} onChange={field.onChange} onBlur={field.onBlur} disabled={booked} aria-invalid={fieldState.invalid} />
+                <PriceInput
+                  id="adultPrice"
+                  value={field.value}
+                  onChange={(v) => {
+                    field.onChange(v);
+                    revalidateTouched(form, "childPrice");
+                  }}
+                  onBlur={field.onBlur}
+                  disabled={booked}
+                  aria-invalid={fieldState.invalid}
+                />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}

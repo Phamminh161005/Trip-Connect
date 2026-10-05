@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePagedQuery } from "@/hooks/usePagedQuery";
 import { useSearchParamsState } from "@/hooks/useSearchParamsState";
 import { errorMessage } from "@/lib/api/errors";
+import { withErrorToast } from "@/lib/withErrorToast";
 import { hideReview, listManagedReviews, replyToReview, unhideReview, type ReviewScope } from "@/lib/api/reviews";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formatDay } from "@/lib/tour/labels";
@@ -207,7 +208,7 @@ function ReviewRow({ review, scope, onChanged }: { review: ManagedReview; scope:
         confirmLabel="Ẩn đánh giá"
         hint="Người viết sẽ nhận thông báo kèm lý do này."
         onConfirm={async (reason) => {
-          await hideReview(review.id, reason);
+          await withErrorToast(() => hideReview(review.id, reason));
           toast.success("Đã ẩn đánh giá");
           onChanged();
         }}
@@ -219,7 +220,7 @@ function ReviewRow({ review, scope, onChanged }: { review: ManagedReview; scope:
         description="Đánh giá sẽ hiện lại trên trang tour và được tính vào điểm trung bình."
         confirmLabel="Hiện lại"
         onConfirm={async () => {
-          await unhideReview(review.id);
+          await withErrorToast(() => unhideReview(review.id));
           toast.success("Đã hiện lại đánh giá");
           onChanged();
         }}

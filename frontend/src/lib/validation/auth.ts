@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { whenValid } from "./whenValid";
 
 // Luật kiểm tra — khớp các DTO của Backend.
 
@@ -31,18 +32,19 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Mật khẩu không được để trống").max(72, "Mật khẩu tối đa 72 ký tự"),
 });
 
-export const accountInfoSchema = z
-  .object({
-    fullName,
-    email,
-    phone,
-    password: newPassword,
-    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Mật khẩu nhập lại không khớp",
-  });
+const accountInfoBase = z.object({
+  fullName,
+  email,
+  phone,
+  password: newPassword,
+  confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu"),
+});
+
+export const accountInfoSchema = accountInfoBase.refine((data) => data.password === data.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "Mật khẩu nhập lại không khớp",
+  when: whenValid(accountInfoBase, "password", "confirmPassword"),
+});
 
 export const agentBusinessSchema = z.object({
   companyName: z.string().trim().min(1, "Tên công ty không được để trống").max(255, "Tối đa 255 ký tự"),
@@ -89,30 +91,34 @@ export const emailOnlySchema = z.object({ email });
 
 export const otpSchema = z.object({ otp: otpCode });
 
-export const resetPasswordSchema = z
-  .object({
-    otp: otpCode,
-    newPassword,
-    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Mật khẩu nhập lại không khớp",
-  });
+const resetPasswordBase = z.object({
+  otp: otpCode,
+  newPassword,
+  confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu"),
+});
 
-export const changePasswordSchema = z
-  .object({
-    oldPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại").max(72, "Mật khẩu tối đa 72 ký tự"),
-    newPassword,
-    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu mới"),
-  })
+export const resetPasswordSchema = resetPasswordBase.refine((data) => data.newPassword === data.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "Mật khẩu nhập lại không khớp",
+  when: whenValid(resetPasswordBase, "newPassword", "confirmPassword"),
+});
+
+const changePasswordBase = z.object({
+  oldPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại").max(72, "Mật khẩu tối đa 72 ký tự"),
+  newPassword,
+  confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu mới"),
+});
+
+export const changePasswordSchema = changePasswordBase
   .refine((data) => data.newPassword === data.confirmPassword, {
     path: ["confirmPassword"],
     message: "Mật khẩu nhập lại không khớp",
+    when: whenValid(changePasswordBase, "newPassword", "confirmPassword"),
   })
   .refine((data) => data.newPassword !== data.oldPassword, {
     path: ["newPassword"],
     message: "Mật khẩu mới phải khác mật khẩu hiện tại",
+    when: whenValid(changePasswordBase, "oldPassword", "newPassword"),
   });
 
 export const profileSchema = z.object({ fullName, phone });

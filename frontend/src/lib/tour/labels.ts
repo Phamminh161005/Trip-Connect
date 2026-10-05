@@ -61,8 +61,8 @@ export const departureDisplayStatus = (departure: TourDeparture): DepartureStatu
 
 const priceFormat = new Intl.NumberFormat("vi-VN");
 
-/** 3490000 -> "3.490.000đ" */
-export const formatPrice = (value: number) => `${priceFormat.format(value)}đ`;
+/** 3490000 -> "3.490.000 VNĐ" */
+export const formatPrice = (value: number) => `${priceFormat.format(value)} VNĐ`;
 
 /** "2 ngày 1 đêm" / "1 ngày" */
 export const formatDuration = (days: number, nights: number) => (nights > 0 ? `${days} ngày ${nights} đêm` : `${days} ngày`);

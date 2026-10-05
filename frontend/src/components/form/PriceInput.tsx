@@ -25,9 +25,9 @@ export function PriceInput({
           const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
           onChange(digits === "" ? undefined : Number(digits));
         }}
-        className="h-12 rounded-xl pr-9 text-base"
+        className="h-12 rounded-xl pr-14 text-base"
       />
-      <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">đ</span>
+      <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted-foreground">VNĐ</span>
     </div>
   );
 }

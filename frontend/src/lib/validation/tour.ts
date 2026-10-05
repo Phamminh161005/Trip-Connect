@@ -1,14 +1,15 @@
 import { z } from "zod";
 import { TOUR_RULES } from "@/lib/tour/labels";
+import { whenValid } from "./whenValid";
 import type { DepartureRequest, TourContentRequest, TourDetail } from "@/types/tour";
 
 // Luật kiểm tra nội dung tour — giống TourContentRequest / DepartureRequest / TourContentWriter của Backend.
 // Danh sách dòng chữ (điểm nổi bật, dịch vụ) lưu dạng { value } vì useFieldArray của react-hook-form cần object.
 
-const line = (max: number, emptyMessage: string) =>
+export const line = (max: number, emptyMessage: string) =>
   z.object({ value: z.string().trim().min(1, emptyMessage).max(max, `Tối đa ${max} ký tự`) });
 
-const itineraryDay = z.object({
+export const itineraryDay = z.object({
   title: z.string().trim().min(1, "Tiêu đề ngày không được để trống").max(200, "Tối đa 200 ký tự"),
   description: z.string().trim().min(1, "Nội dung ngày không được để trống").max(5000, "Tối đa 5000 ký tự"),
   breakfast: z.boolean(),
@@ -17,8 +18,7 @@ const itineraryDay = z.object({
   accommodation: z.string().trim().max(255, "Tối đa 255 ký tự"),
 });
 
-export const tourContentSchema = z
-  .object({
+const tourContentBase = z.object({
     title: z.string().trim().min(10, "Tên tour từ 10 đến 150 ký tự").max(150, "Tên tour từ 10 đến 150 ký tự"),
     categoryIds: z
       .array(z.number())
@@ -52,14 +52,18 @@ export const tourContentSchema = z
       .array(line(255, "Dòng dịch vụ không được để trống"))
       .max(TOUR_RULES.maxServiceItems, `Tối đa ${TOUR_RULES.maxServiceItems} dòng`),
     notes: z.string().trim().max(2000, "Tối đa 2000 ký tự"),
-  })
+  });
+
+export const tourContentSchema = tourContentBase
   .refine((v) => v.durationNights === v.durationDays || v.durationNights === v.durationDays - 1, {
     path: ["durationNights"],
     message: "Số đêm bằng số ngày hoặc ít hơn 1 (vd 3 ngày 2 đêm)",
+    when: whenValid(tourContentBase, "durationDays", "durationNights"),
   })
   .refine((v) => v.itinerary.length === v.durationDays, {
     path: ["itinerary"],
     message: "Số ngày trong lịch trình phải bằng số ngày của tour",
+    when: whenValid(tourContentBase, "durationDays"),
   });
 
 export type TourContentValues = z.infer<typeof tourContentSchema>;
@@ -157,8 +161,7 @@ export function backendFieldToFormPath(field: string): string {
   return /^(highlights|includedServices|excludedServices)\.\d+$/.test(path) ? `${path}.value` : path;
 }
 
-export const departureSchema = z
-  .object({
+const departureBase = z.object({
     startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Vui lòng chọn ngày khởi hành"),
     capacity: z
       .number({ error: "Vui lòng nhập số chỗ" })
@@ -167,13 +170,14 @@ export const departureSchema = z
       .max(TOUR_RULES.maxCapacity, `Số chỗ tối đa là ${TOUR_RULES.maxCapacity}`),
     adultPrice: z
       .number({ error: "Vui lòng nhập giá người lớn" })
-      .min(TOUR_RULES.minAdultPrice, "Giá người lớn tối thiểu 10.000đ")
+      .min(TOUR_RULES.minAdultPrice, "Giá người lớn tối thiểu 10.000 VNĐ")
       .max(TOUR_RULES.maxPrice, "Giá quá lớn"),
     childPrice: z.number({ error: "Vui lòng nhập giá trẻ em" }).min(0).max(TOUR_RULES.maxPrice, "Giá quá lớn"),
   })
-  .refine((v) => v.childPrice <= v.adultPrice, {
-    path: ["childPrice"],
-    message: "Giá trẻ em không được cao hơn giá người lớn",
-  });
+export const departureSchema = departureBase.refine((v) => v.childPrice <= v.adultPrice, {
+  path: ["childPrice"],
+  message: "Giá trẻ em không được cao hơn giá người lớn",
+  when: whenValid(departureBase, "adultPrice", "childPrice"),
+});
 
 export type DepartureValues = DepartureRequest;

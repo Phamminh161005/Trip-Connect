@@ -25,7 +25,11 @@ export default function HomePage() {
             <TourSearchBar variant="hero" />
           </div>
           <p className="text-sm text-white/80">
-            Bạn là công ty lữ hành?{" "}
+            Chưa thấy tour ưng ý?{" "}
+            <Link href="/custom-tour" className="font-semibold text-white underline underline-offset-4">
+              Thiết kế tour riêng
+            </Link>
+            {" · "}Bạn là công ty lữ hành?{" "}
             <Link href="/register?type=agent" className="font-semibold text-white underline underline-offset-4">
               Trở thành đối tác
             </Link>

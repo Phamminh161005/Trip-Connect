@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { whenValid } from "@/lib/validation/whenValid";
 
 // Form "Yêu cầu cập nhật hồ sơ": điền sẵn thông tin hiện tại, người dùng sửa chỗ muốn đổi.
 // Luật khớp AgentChangeRequestForm / ValidationPatterns ở Backend.
-export const changeRequestSchema = z
-  .object({
+const changeRequestBase = z.object({
     companyName: z.string().trim().min(1, "Tên công ty không được để trống").max(255, "Tối đa 255 ký tự"),
     taxCode: z
       .string()
@@ -18,9 +18,11 @@ export const changeRequestSchema = z
     bankAccountHolder: z.string().trim().max(255, "Tối đa 255 ký tự"),
     currentPassword: z.string().max(72, "Mật khẩu tối đa 72 ký tự"),
     note: z.string().trim().max(1000, "Ghi chú tối đa 1000 ký tự"),
-  })
-  // Chỉ kiểm tra các ô ngân hàng khi người dùng chọn "đổi tài khoản ngân hàng"
-  .superRefine((data, ctx) => {
+  });
+
+// Chỉ kiểm tra các ô ngân hàng khi người dùng chọn "đổi tài khoản ngân hàng" (không đợi các ô khác hợp lệ)
+export const changeRequestSchema = changeRequestBase.superRefine(
+  (data, ctx) => {
     if (!data.changeBank) return;
     if (!/^\d{6}$/.test(data.bankBin)) {
       ctx.addIssue({ code: "custom", path: ["bankBin"], message: "Vui lòng chọn ngân hàng trong danh sách" });
@@ -38,6 +40,8 @@ export const changeRequestSchema = z
         message: "Nhập mật khẩu hiện tại để xác nhận đổi tài khoản ngân hàng",
       });
     }
-  });
+  },
+  { when: whenValid(changeRequestBase, "changeBank") },
+);
 
 export type ChangeRequestValues = z.infer<typeof changeRequestSchema>;

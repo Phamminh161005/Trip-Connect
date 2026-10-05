@@ -8,12 +8,16 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface AgentServiceAreaRepository extends JpaRepository<AgentServiceArea, AgentServiceAreaId> {
 
     @EntityGraph(attributePaths = "location")
     List<AgentServiceArea> findByAgentId(Long agentId);
+
+    @EntityGraph(attributePaths = "location")
+    List<AgentServiceArea> findByAgentIdIn(Collection<Long> agentIds);
 
     @Modifying
     @Query("delete from AgentServiceArea a where a.agent.id = :agentId")

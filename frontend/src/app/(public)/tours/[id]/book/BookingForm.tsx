@@ -35,6 +35,7 @@ import {
   type TravellerCounts,
 } from "@/lib/booking/passengerSlots";
 import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
+import { whenValid } from "@/lib/validation/whenValid";
 import { formatDay, formatDayWithWeekday, formatDuration, formatPrice } from "@/lib/tour/labels";
 import type { TourDeparture, TourDetail } from "@/types/tour";
 
@@ -56,16 +57,26 @@ type BookingValues = z.infer<typeof baseSchema>;
 /** Quy tắc danh sách phụ thuộc lịch khởi hành đang chọn -> truyền qua context của form. */
 const bookingResolver: Resolver<BookingValues, SlotRules> = (values, context, options) =>
   zodResolver(
-    baseSchema.superRefine((v, ctx) => {
-      if (v.adults < 1) ctx.addIssue({ code: "custom", path: ["adults"], message: "Cần ít nhất 1 người lớn" });
-      if (v.infants > v.adults) {
-        ctx.addIssue({ code: "custom", path: ["infants"], message: "Mỗi trẻ sơ sinh cần đi cùng một người lớn" });
-      }
-      if (v.adults + v.children + v.infants > BOOKING_RULES.maxTravellers) {
-        ctx.addIssue({ code: "custom", path: ["adults"], message: `Mỗi đơn tối đa ${BOOKING_RULES.maxTravellers} khách` });
-      }
-      if (context) checkSlots(v.passengers, context, ctx, ["passengers"]);
-    }),
+    // Mỗi nhóm luật chạy ngay khi ô của nó hợp lệ, không đợi các ô liên hệ / ô đồng ý chính sách
+    baseSchema
+      .superRefine(
+        (v, ctx) => {
+          if (v.adults < 1) ctx.addIssue({ code: "custom", path: ["adults"], message: "Cần ít nhất 1 người lớn" });
+          if (v.infants > v.adults) {
+            ctx.addIssue({ code: "custom", path: ["infants"], message: "Mỗi trẻ sơ sinh cần đi cùng một người lớn" });
+          }
+          if (v.adults + v.children + v.infants > BOOKING_RULES.maxTravellers) {
+            ctx.addIssue({ code: "custom", path: ["adults"], message: `Mỗi đơn tối đa ${BOOKING_RULES.maxTravellers} khách` });
+          }
+        },
+        { when: whenValid(baseSchema, "adults", "children", "infants") },
+      )
+      .superRefine(
+        (v, ctx) => {
+          if (context) checkSlots(v.passengers, context, ctx, ["passengers"]);
+        },
+        { when: whenValid(baseSchema, "passengers") },
+      ),
   )(values, context, options);
 
 /** Lỗi Backend "passengers[0].fullName" -> ô "passengers.0.fullName" trong form. */

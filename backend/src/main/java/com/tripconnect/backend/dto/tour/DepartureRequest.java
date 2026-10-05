@@ -22,7 +22,7 @@ public class DepartureRequest {
     private Integer capacity;
 
     @NotNull(message = "Vui lòng nhập giá người lớn")
-    @Min(value = 10_000, message = "Giá người lớn tối thiểu 10.000đ")
+    @Min(value = 10_000, message = "Giá người lớn tối thiểu 10.000 VNĐ")
     @Max(value = 1_000_000_000, message = "Giá quá lớn")
     private Long adultPrice;
 

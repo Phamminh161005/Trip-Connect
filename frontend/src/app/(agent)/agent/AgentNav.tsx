@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileBadge, LayoutDashboard, Map, Star, Ticket } from "lucide-react";
+import { FileBadge, LayoutDashboard, Map, MessageSquareText, Star, Ticket } from "lucide-react";
 import { AGENT_AREA_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-// TODO: Yêu cầu tư vấn, Doanh thu
+// TODO: Doanh thu
 const ITEMS = [
   { href: "/agent", label: "Tổng quan", icon: LayoutDashboard, exact: true },
   { href: "/agent/tours", label: "Tour của tôi", icon: Map },
   { href: "/agent/bookings", label: "Đơn đặt tour", icon: Ticket },
+  { href: "/agent/requests", label: "Yêu cầu tư vấn", icon: MessageSquareText },
   { href: "/agent/reviews", label: "Đánh giá", icon: Star },
   { href: "/agent/profile", label: "Hồ sơ kinh doanh", icon: FileBadge },
 ];

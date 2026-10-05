@@ -75,7 +75,7 @@ public final class EmailTemplates {
     static final java.text.NumberFormat VND = java.text.NumberFormat.getIntegerInstance(java.util.Locale.forLanguageTag("vi-VN"));
 
     static String money(long amount) {
-        return VND.format(amount) + "đ";
+        return VND.format(amount) + " VNĐ";
     }
 
     static String day(java.time.LocalDate date) {
@@ -176,6 +176,56 @@ public final class EmailTemplates {
                         + "Hãy dành một phút đánh giá tour — nhận xét của bạn giúp các khách khác chọn được chuyến đi phù hợp"
                         + " và giúp đơn vị tổ chức phục vụ tốt hơn.\n"
                         + "Bạn có thể đánh giá trong " + windowDays + " ngày tới tại: " + reviewUrl);
+    }
+
+    // ===== Yêu cầu thiết kế tour riêng =====
+
+    public static Email customRequestAssigned(String code, String destinations, java.time.LocalDateTime deadline, String url) {
+        return new Email(
+                "[TripConnect] Yêu cầu thiết kế tour mới " + code,
+                "Bạn được giao một yêu cầu thiết kế tour riêng: " + destinations + ".\n"
+                        + "Vui lòng xem chi tiết và Nhận hoặc Từ chối trước "
+                        + deadline.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+                        + ". Quá hạn, yêu cầu sẽ được chuyển cho đơn vị khác.\n\n"
+                        + "Xem yêu cầu: " + url);
+    }
+
+    public static Email customRequestAccepted(String code, String companyName, int proposalHours, String url) {
+        return new Email(
+                "Yêu cầu " + code + " đã có đơn vị nhận - TripConnect",
+                companyName + " đã nhận yêu cầu thiết kế tour " + code + " của bạn và sẽ gửi đề xuất lịch trình, báo giá trong "
+                        + proposalHours + " giờ.\n\nTheo dõi yêu cầu: " + url);
+    }
+
+    public static Email customProposalReceived(String code, String companyName, int versionNo, String title,
+                                               java.time.LocalDate startDate, java.time.LocalDate endDate, long totalPrice,
+                                               long depositAmount, java.time.LocalDateTime expiresAt, String url) {
+        return new Email(
+                (versionNo == 1 ? "Đề xuất tour cho yêu cầu " : "Đề xuất đã chỉnh sửa cho yêu cầu ") + code + " - TripConnect",
+                companyName + (versionNo == 1 ? " đã gửi đề xuất lịch trình và báo giá" : " đã gửi bản chỉnh sửa (bản " + versionNo + ")")
+                        + " cho yêu cầu thiết kế tour " + code + " của bạn.\n\n"
+                        + "Chuyến đi: " + title + "\n"
+                        + "Thời gian: " + day(startDate) + " - " + day(endDate) + "\n"
+                        + "Tổng chi phí: " + money(totalPrice) + " (đặt cọc " + money(depositAmount) + " khi xác nhận)\n\n"
+                        + "Vui lòng xem chi tiết và Đồng ý hoặc Yêu cầu chỉnh sửa trước "
+                        + expiresAt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")) + ".\n\n"
+                        + "Xem đề xuất: " + url);
+    }
+
+    public static Email customProposalAccepted(String code, String customerName, String title, java.time.LocalDate startDate,
+                                               long totalPrice, String url) {
+        return new Email(
+                "[TripConnect] Khách đã đồng ý đề xuất - " + code,
+                "Khách " + customerName + " đã đồng ý đề xuất \"" + title + "\" (khởi hành " + day(startDate) + ", tổng "
+                        + money(totalPrice) + ") cho yêu cầu " + code + ".\n\n"
+                        + "Bước tiếp theo là tạo tour riêng để khách đặt cọc. Chi tiết: " + url);
+    }
+
+    public static Email customRequestClosed(String code, String reason, String url) {
+        return new Email(
+                "Yêu cầu " + code + " đã đóng - TripConnect",
+                "Yêu cầu thiết kế tour " + code + " của bạn đã đóng.\nLý do: " + reason
+                        + "\n\nBạn có thể gửi yêu cầu mới bất cứ lúc nào. Chi tiết: " + url);
     }
 
     public static Email bookingCancelled(String code, String tourTitle, String reason, long refundAmount) {
