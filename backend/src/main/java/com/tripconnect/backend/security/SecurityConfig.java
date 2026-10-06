@@ -73,6 +73,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/tours/**").permitAll()
                         // VNPay gửi kết quả thanh toán (tin cậy nhờ chữ ký, không cần đăng nhập)
                         .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/**").permitAll()
+                        // Bắt tay WebSocket không mang header; token được kiểm tra ở khung CONNECT (StompAuthInterceptor)
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/agent/**").hasRole("AGENT")
                         .anyRequest().authenticated()

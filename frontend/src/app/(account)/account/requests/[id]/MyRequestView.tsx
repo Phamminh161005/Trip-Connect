@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CircleCheck, FilePen, Hourglass, Info, PartyPopper, PenTool, XCircle } from "lucide-react";
+import { ArrowLeft, CircleCheck, CreditCard, FilePen, Hourglass, Info, PartyPopper, PenTool, Ticket, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ReasonDialog } from "@/components/common/ReasonDialog";
 import { ProposalSection } from "@/components/customRequest/ProposalSection";
@@ -90,6 +91,7 @@ export function MyRequestView({ id }: { id: number }) {
           )
         }
       />
+      <ChatPanel scope="customer" requestId={r.id} />
       <RequestInfo request={r} />
 
       <ConfirmDialog
@@ -200,14 +202,28 @@ function StatusBanner({ request: r }: { request: CustomRequestDetail }) {
     );
   }
   if (r.status === "AGREED") {
+    const awaitingPayment = r.bookingStatus === "PENDING_PAYMENT" || r.bookingStatus === "DEPOSIT_PAID";
     return (
       <Alert className="rounded-2xl border-primary/30 bg-primary/5">
         <PartyPopper />
         <AlertTitle>
           Bạn đã chốt lịch trình với {r.agentName} lúc {formatDateTime(r.agreedAt)}
         </AlertTitle>
-        <AlertDescription>
-          Đơn vị tổ chức sẽ tạo tour riêng để bạn đặt cọc {CUSTOM_REQUEST_RULES.depositPercent}%. Bạn sẽ nhận thông báo khi tour sẵn sàng.
+        <AlertDescription className="flex flex-col items-start gap-3">
+          <span>
+            {r.bookingStatus === "PENDING_PAYMENT"
+              ? `Đơn đặt tour ${r.bookingCode} đã được tạo. Hãy đặt cọc trong 48 giờ để giữ chuyến đi.`
+              : r.bookingStatus === "DEPOSIT_PAID"
+                ? `Đã đặt cọc đơn ${r.bookingCode}. Nhớ nhập đủ thông tin người đi và thanh toán phần còn lại trước hạn.`
+                : `Đơn đặt tour ${r.bookingCode ?? ""} — theo dõi trong mục Đơn đặt của tôi.`}
+          </span>
+          {r.bookingId && (
+            <Button asChild size="sm" className="rounded-lg">
+              <Link href={`/account/bookings/${r.bookingId}`}>
+                <CreditCard /> {r.bookingStatus === "PENDING_PAYMENT" ? "Đặt cọc ngay" : awaitingPayment ? "Thanh toán / nhập người đi" : "Xem đơn đặt tour"}
+              </Link>
+            </Button>
+          )}
         </AlertDescription>
       </Alert>
     );
@@ -218,7 +234,16 @@ function StatusBanner({ request: r }: { request: CustomRequestDetail }) {
       <AlertTitle>
         Yêu cầu {r.status === "CANCELLED" ? "đã hủy" : "đã đóng"} {r.closedAt && `lúc ${formatDateTime(r.closedAt)}`}
       </AlertTitle>
-      {r.closedReason && <AlertDescription>{r.closedReason}</AlertDescription>}
+      {(r.closedReason || r.bookingId) && (
+        <AlertDescription className="flex flex-col items-start gap-2">
+          {r.closedReason && <span>{r.closedReason}</span>}
+          {r.bookingId && (
+            <Link href={`/account/bookings/${r.bookingId}`} className="flex items-center gap-1 font-medium text-primary hover:underline">
+              <Ticket className="size-4" /> Xem đơn {r.bookingCode} (hoàn tiền nếu có)
+            </Link>
+          )}
+        </AlertDescription>
+      )}
     </Alert>
   );
 }

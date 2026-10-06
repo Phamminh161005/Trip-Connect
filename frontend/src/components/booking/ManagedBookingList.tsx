@@ -21,6 +21,7 @@ export function ManagedBookingList({ scope }: { scope: BookingScope }) {
     { value: "ALL", label: "Tất cả" },
     { value: "PAID", label: "Đã thanh toán" },
     { value: "PENDING_PAYMENT", label: "Chờ thanh toán" },
+    { value: "DEPOSIT_PAID", label: "Đã đặt cọc" },
     { value: "COMPLETED", label: "Hoàn thành" },
     { value: "CANCELLED", label: "Đã hủy" },
     ...(isAdmin ? [{ value: "MANUAL_REFUND" as Tab, label: "Cần hoàn thủ công" }] : []),

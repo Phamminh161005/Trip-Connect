@@ -2,6 +2,7 @@ package com.tripconnect.backend.service;
 
 import com.tripconnect.backend.dto.notification.NotificationResponses;
 import com.tripconnect.backend.entity.Notification;
+import com.tripconnect.backend.realtime.RealtimePublisher;
 import com.tripconnect.backend.enums.UserRole;
 import com.tripconnect.backend.repository.NotificationRepository;
 import com.tripconnect.backend.repository.UserRepository;
@@ -26,6 +27,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final RealtimePublisher realtimePublisher;
     private final Clock clock;
 
     /** Tham gia transaction của nghiệp vụ đang chạy (nếu có). */
@@ -43,6 +45,8 @@ public class NotificationService {
             return n;
         }).toList();
         notificationRepository.saveAll(notifications);
+        // Chuông của người nhận cập nhật ngay (sau khi commit), không đợi lượt hỏi định kỳ
+        realtimePublisher.publish(userIds, RealtimePublisher.Type.NOTIFICATION, null);
     }
 
     @Transactional

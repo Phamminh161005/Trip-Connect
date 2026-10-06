@@ -56,23 +56,40 @@ public class PaymentService {
 
     // ===================== Tạo link thanh toán =====================
 
-    /** Tạo một giao dịch mới cho đơn đang chờ thanh toán. Phải gọi trong transaction (đơn đã khóa). */
+    /** Link VNPay của đơn trả 2 lần (hạn tính bằng ngày) chỉ sống ngần này phút; hết thì khách bấm thanh toán lại. */
+    static final int LINK_MINUTES = 15;
+
+    /**
+     * Tạo một giao dịch mới cho lần thanh toán tiếp theo của đơn: toàn bộ (đơn thường), tiền cọc hoặc phần còn lại
+     * (tour riêng). Phải gọi trong transaction (đơn đã khóa).
+     */
     @Transactional(propagation = Propagation.MANDATORY)
     public String createPaymentUrl(Booking booking, String ipAddr) {
         vnPayClient.requireConfigured();
         LocalDateTime now = LocalDateTime.now(clock);
         long attempt = paymentRepository.countByBookingId(booking.getId()) + 1;
+        PaymentPurpose purpose = booking.getStatus() == BookingStatus.DEPOSIT_PAID ? PaymentPurpose.BALANCE
+                : booking.paysInTwoParts() ? PaymentPurpose.DEPOSIT : PaymentPurpose.FULL;
 
         Payment payment = new Payment();
         payment.setBooking(booking);
         payment.setTxnRef(booking.getCode() + String.format("%02d", attempt));
-        payment.setAmount(booking.getTotalAmount());
+        payment.setAmount(booking.nextPaymentAmount());
+        payment.setPurpose(purpose);
         payment.setStatus(PaymentStatus.PENDING);
         payment.setVnpCreateDate(now.format(VnPayClient.VNP_DATE));
         paymentRepository.save(payment);
 
-        return vnPayClient.createPaymentUrl(payment.getTxnRef(), payment.getAmount(),
-                "Thanh toan don dat tour " + booking.getCode(), ipAddr, now, booking.getHoldExpiresAt());
+        LocalDateTime deadline = purpose == PaymentPurpose.BALANCE
+                ? booking.getBalanceDueDate().plusDays(1).atStartOfDay() : booking.getHoldExpiresAt();
+        LocalDateTime linkExpires = deadline.isBefore(now.plusMinutes(LINK_MINUTES)) ? deadline : now.plusMinutes(LINK_MINUTES);
+        String info = switch (purpose) {
+            case DEPOSIT -> "Dat coc don dat tour ";
+            case BALANCE -> "Thanh toan phan con lai don ";
+            case FULL -> "Thanh toan don dat tour ";
+        };
+        return vnPayClient.createPaymentUrl(payment.getTxnRef(), payment.getAmount(), info + booking.getCode(), ipAddr, now,
+                linkExpires);
     }
 
     // ===================== Nhận kết quả =====================
@@ -155,14 +172,45 @@ public class PaymentService {
             }
 
             payment.setStatus(PaymentStatus.SUCCESS);
+            PaymentPurpose purpose = payment.getPurpose();
             switch (booking.getStatus()) {
-                case PENDING_PAYMENT -> markPaid(booking);
+                case PENDING_PAYMENT -> {
+                    if (purpose == PaymentPurpose.DEPOSIT) markDepositPaid(booking);
+                    else if (purpose == PaymentPurpose.FULL) markPaid(booking);
+                    else refundService.refundExtraPayment(booking, payment, "Thanh toán không đúng bước cho đơn " + booking.getCode());
+                }
+                case DEPOSIT_PAID -> {
+                    if (purpose == PaymentPurpose.BALANCE) markPaid(booking);
+                    else refundService.refundExtraPayment(booking, payment, "Thanh toán trùng cho đơn " + booking.getCode());
+                }
                 case CANCELLED -> recoverLatePayment(booking, payment);
                 default -> refundService.refundExtraPayment(booking, payment, "Thanh toán trùng cho đơn " + booking.getCode());
             }
-            return new Outcome("00", "Confirm Success", booking.getId(), booking.getCode(), booking.getStatus(),
-                    booking.getStatus() == BookingStatus.PAID);
+            boolean paid = booking.getStatus() == BookingStatus.PAID || booking.getStatus() == BookingStatus.DEPOSIT_PAID;
+            return new Outcome("00", "Confirm Success", booking.getId(), booking.getCode(), booking.getStatus(), paid);
         });
+    }
+
+    /** Tour riêng: đã nhận tiền cọc, chờ phần còn lại. */
+    private void markDepositPaid(Booking booking) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        booking.setStatus(BookingStatus.DEPOSIT_PAID);
+        booking.setDepositPaidAt(now);
+        paymentRepository.findByBookingIdAndStatus(booking.getId(), PaymentStatus.PENDING)
+                .forEach(p -> p.setStatus(PaymentStatus.EXPIRED));
+
+        var tour = booking.getTour();
+        long balance = booking.getTotalAmount() - booking.getDepositAmount();
+        eventPublisher.publishEvent(new NotificationEvents.UserEmailEvent(booking.getContactEmail(),
+                EmailTemplates.depositPaid(booking.getCode(), tour.getTitle(), booking.getDeparture().getStartDate(),
+                        booking.getDepositAmount(), balance, booking.getBalanceDueDate(), booking.travellers())));
+        eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(booking.getCustomer().getId(),
+                WebNotifications.depositPaid(booking.getId(), booking.getCode(), balance, booking.getBalanceDueDate())));
+        if (booking.getAgent() != null) {
+            eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(booking.getAgent().getId(),
+                    WebNotifications.privateDepositPaidForAgent(booking.getId(), booking.getCode(), tour.getTitle(),
+                            booking.getDepositAmount())));
+        }
     }
 
     private void markPaid(Booking booking) {
@@ -181,15 +229,17 @@ public class PaymentService {
                         booking.getDeparture().getStartDate())));
         // Agent chỉ nhận thông báo trên web (đông khách thì email quá nhiều)
         if (booking.getAgent() != null) {
-            eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(booking.getAgent().getId(),
-                    WebNotifications.newBooking(booking.getId(), booking.getCode(), tour.getTitle(),
+            eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(booking.getAgent().getId(), booking.paysInTwoParts()
+                    ? WebNotifications.privateBalancePaidForAgent(booking.getId(), booking.getCode(), tour.getTitle())
+                    : WebNotifications.newBooking(booking.getId(), booking.getCode(), tour.getTitle(),
                             booking.getDeparture().getStartDate(), booking.travellers(), booking.getTotalAmount())));
         }
     }
 
     /** Khách trả tiền sau khi đơn đã bị hủy vì quá hạn giữ chỗ (VNPay báo trễ). */
     private void recoverLatePayment(Booking booking, Payment payment) {
-        if (booking.getCancelledBy() == CancelledBy.SYSTEM) {
+        // Tour riêng bị hủy thì yêu cầu cũng đã đóng -> không khôi phục, hoàn lại khoản vừa trả
+        if (booking.getCancelledBy() == CancelledBy.SYSTEM && !booking.getTour().isPrivateTour()) {
             TourDeparture departure = departureRepository.findByIdForUpdate(booking.getDeparture().getId()).orElseThrow();
             int free = departure.getCapacity() - bookingStats.seatsBooked(departure.getId());
             boolean stillBookable = departure.getStatus() == DepartureStatus.OPEN
@@ -243,7 +293,38 @@ public class PaymentService {
         transactionTemplate.executeWithoutResult(status -> {
             Booking booking = bookingRepository.findByIdForUpdate(bookingId).orElseThrow();
             if (booking.getStatus() == BookingStatus.PENDING_PAYMENT && booking.getHoldExpiresAt().isBefore(LocalDateTime.now(clock))) {
-                cancellation.cancel(booking, CancelledBy.SYSTEM, "Quá thời gian giữ chỗ mà chưa thanh toán", 0, false);
+                // Tour riêng (hạn 48 giờ) thì báo khách; đơn thường hết 15 phút giữ chỗ không cần
+                boolean privateTour = booking.getTour().isPrivateTour();
+                cancellation.cancel(booking, CancelledBy.SYSTEM, privateTour
+                        ? "Quá " + BookingRules.DEPOSIT_HOLD_HOURS + " giờ mà chưa thanh toán đặt cọc"
+                        : "Quá thời gian giữ chỗ mà chưa thanh toán", 0, privateTour);
+            }
+        });
+    }
+
+    /**
+     * Tour riêng quá hạn trả phần còn lại: hỏi VNPay các giao dịch còn treo (khách có thể vừa trả xong),
+     * vẫn chưa trả thì hủy đơn — tiền cọc không hoàn theo chính sách.
+     */
+    public void settleOverdueBalance(Long bookingId) {
+        List<Payment> pending = transactionTemplate.execute(status ->
+                paymentRepository.findByBookingIdAndStatus(bookingId, PaymentStatus.PENDING));
+        if (vnPayClient.isConfigured() && pending != null) {
+            for (Payment payment : pending) {
+                VnPayClient.QueryResult result = vnPayClient.query(payment.getTxnRef(), payment.getVnpCreateDate(),
+                        SERVER_IP, LocalDateTime.now(clock));
+                if (result.reachable() && result.paid() && result.amount() != null) {
+                    applyResult(payment.getTxnRef(), true, result.amount(), result.responseCode(), result.transactionNo(),
+                            result.bankCode(), result.payDate());
+                }
+            }
+        }
+        transactionTemplate.executeWithoutResult(status -> {
+            Booking booking = bookingRepository.findByIdForUpdate(bookingId).orElseThrow();
+            if (booking.getStatus() == BookingStatus.DEPOSIT_PAID
+                    && booking.getBalanceDueDate().isBefore(LocalDate.now(clock))) {
+                cancellation.cancel(booking, CancelledBy.SYSTEM,
+                        "Quá hạn thanh toán phần còn lại (tiền cọc không được hoàn theo chính sách tour riêng)", 0, true);
             }
         });
     }

@@ -71,6 +71,8 @@ public class TourAccess {
 
     private Tour checkOwner(Optional<Tour> found, TourActor actor) {
         Tour tour = found.orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tour"));
+        // Tour riêng: nội dung là đề xuất khách đã chốt, không sửa / thêm lịch qua trang quản lý tour
+        if (tour.getStatus() == TourStatus.PRIVATE) throw new ResourceNotFoundException("Không tìm thấy tour");
         if (actor.admin()) {
             if (!tour.isPlatformTour()) {
                 throw new ForbiddenException("Đây là tour của đối tác — Admin chỉ được duyệt hoặc đình chỉ, không được chỉnh sửa");

@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * Hủy đơn — dùng chung cho mọi trường hợp:
- *  - Khách tự hủy: hoàn theo chính sách (tính ở nơi gọi).
+ *  - Khách tự hủy: hoàn theo chính sách (tính ở nơi gọi; tour riêng không hoàn tiền cọc).
  *  - Agent hủy chuyến / Admin hủy vì bất khả kháng: hoàn 100%.
  *  - Hệ thống: quá hạn giữ chỗ (chưa trả tiền -> không hoàn).
  * Phải gọi trong transaction, đơn đã được khóa / nạp mới.
@@ -43,10 +43,11 @@ public class BookingCancellation {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void cancel(Booking booking, CancelledBy by, String reason, long refundAmount, boolean notify) {
-        if (booking.getStatus() != BookingStatus.PENDING_PAYMENT && booking.getStatus() != BookingStatus.PAID) {
+        if (!ACTIVE.contains(booking.getStatus())) {
             throw new IllegalStateException("Đơn " + booking.getCode() + " không ở trạng thái có thể hủy");
         }
-        boolean paid = booking.getStatus() == BookingStatus.PAID;
+        long paidAmount = booking.paidAmount();
+        boolean paid = paidAmount > 0;
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancelledAt(LocalDateTime.now(clock));
         booking.setCancelledBy(by);
@@ -57,7 +58,7 @@ public class BookingCancellation {
             payment.setStatus(PaymentStatus.EXPIRED);
         }
         if (paid) {
-            refundService.refundBooking(booking, Math.min(refundAmount, booking.getTotalAmount()), reason);
+            refundService.refundBooking(booking, Math.min(refundAmount, paidAmount), reason);
         }
         if (notify) {
             long refund = paid ? booking.getRefundAmount() : 0;
@@ -66,15 +67,25 @@ public class BookingCancellation {
             eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(booking.getCustomer().getId(),
                     WebNotifications.bookingCancelled(booking.getId(), booking.getCode(), booking.getTour().getTitle(), refund)));
         }
+        if (booking.getTour().isPrivateTour()) {
+            eventPublisher.publishEvent(new PrivateBookingCancelled(booking.getTour().getCustomRequestId(), by, reason));
+        }
     }
+
+    /** Đơn tour riêng bị hủy -> yêu cầu thiết kế tour tương ứng kết thúc theo (xử lý trong cùng transaction). */
+    public record PrivateBookingCancelled(Long customRequestId, CancelledBy by, String reason) {
+    }
+
+    /** Đơn còn hiệu lực (chưa hủy / hoàn thành). */
+    public static final List<BookingStatus> ACTIVE =
+            List.of(BookingStatus.PENDING_PAYMENT, BookingStatus.DEPOSIT_PAID, BookingStatus.PAID);
 
     /** Agent hủy chuyến: mọi đơn còn hiệu lực của lịch bị hủy, khách đã trả được hoàn 100%. */
     @Transactional(propagation = Propagation.MANDATORY)
     public int cancelAllForDeparture(Long departureId, CancelledBy by, String reason) {
-        List<Booking> bookings = bookingRepository.findByDepartureIdAndStatusIn(departureId,
-                List.of(BookingStatus.PENDING_PAYMENT, BookingStatus.PAID));
+        List<Booking> bookings = bookingRepository.findByDepartureIdAndStatusIn(departureId, ACTIVE);
         for (Booking booking : bookings) {
-            cancel(booking, by, "Chuyến đi bị hủy: " + reason, booking.getTotalAmount(), true);
+            cancel(booking, by, "Chuyến đi bị hủy: " + reason, booking.paidAmount(), true);
         }
         return bookings.size();
     }

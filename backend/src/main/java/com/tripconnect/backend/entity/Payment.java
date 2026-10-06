@@ -33,6 +33,10 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    private com.tripconnect.backend.enums.PaymentPurpose purpose = com.tripconnect.backend.enums.PaymentPurpose.FULL;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private PaymentStatus status;
 
     /** vnp_CreateDate đã gửi (yyyyMMddHHmmss, giờ Việt Nam) — VNPay yêu cầu khi tra cứu / hoàn tiền. */

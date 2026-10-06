@@ -59,6 +59,8 @@ public class TourService {
         Specification<Tour> spec = actor.admin()
                 ? (root, query, cb) -> cb.isNull(root.get("agent"))
                 : (root, query, cb) -> cb.equal(root.get("agent").get("id"), actor.userId());
+        // Tour riêng (từ yêu cầu thiết kế tour) quản lý trong yêu cầu / đơn đặt, không nằm trong danh sách tour
+        spec = spec.and((root, query, cb) -> cb.notEqual(root.get("status"), TourStatus.PRIVATE));
         if (status != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }

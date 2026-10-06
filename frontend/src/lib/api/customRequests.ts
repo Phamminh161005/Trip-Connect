@@ -47,6 +47,9 @@ export const declineCustomRequest = (id: number, reason: string) =>
 export const submitProposal = (id: number, data: ProposalRequest) =>
   apiRequest<CustomRequestDetail>(`/api/agent/custom-requests/${id}/proposals`, { method: "POST", body: data });
 
+export const cancelPrivateTrip = (id: number, reason: string) =>
+  apiRequest<CustomRequestDetail>(`/api/agent/custom-requests/${id}/cancel-trip`, { method: "POST", body: { reason } });
+
 // ----- Admin -----
 
 export const listAdminCustomRequests = (params: { status?: CustomRequestStatus; q?: string; page?: number; size?: number }) =>

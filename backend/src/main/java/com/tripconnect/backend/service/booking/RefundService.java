@@ -25,6 +25,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
+import java.util.Comparator;
+import java.util.List;
 import java.time.LocalDateTime;
 
 /**
@@ -62,10 +64,21 @@ public class RefundService {
             booking.setRefundStatus(RefundStatus.NONE);
             return;
         }
-        Payment payment = paymentRepository.findFirstByBookingIdAndStatus(booking.getId(), PaymentStatus.SUCCESS)
-                .orElseThrow(() -> new IllegalStateException("Không tìm thấy giao dịch thanh toán của đơn " + booking.getCode()));
+        // Đơn trả 2 lần (cọc + phần còn lại) có 2 giao dịch: VNPay chỉ hoàn tối đa số tiền của từng giao dịch,
+        // nên chia khoản hoàn, lấy từ giao dịch mới nhất trước
+        List<Payment> payments = paymentRepository.findByBookingIdAndStatus(booking.getId(), PaymentStatus.SUCCESS).stream()
+                .sorted(Comparator.comparing(Payment::getId).reversed()).toList();
+        if (payments.isEmpty()) {
+            throw new IllegalStateException("Không tìm thấy giao dịch thanh toán của đơn " + booking.getCode());
+        }
         booking.setRefundStatus(RefundStatus.PENDING);
-        createRefund(booking, payment, amount, reason);
+        long remaining = amount;
+        for (Payment payment : payments) {
+            if (remaining <= 0) break;
+            long part = Math.min(remaining, payment.getAmount());
+            createRefund(booking, payment, part, reason);
+            remaining -= part;
+        }
     }
 
     /** Hoàn một giao dịch thừa (vd khách thanh toán 2 lần) — không đổi trạng thái hoàn tiền của đơn. */
@@ -160,7 +173,12 @@ public class RefundService {
             refund.setProcessedAt(LocalDateTime.now(clock));
             if (result.success()) {
                 refund.setStatus(RefundRecordStatus.SUCCESS);
-                if (booking.getRefundStatus() == RefundStatus.PENDING) booking.setRefundStatus(RefundStatus.REFUNDED);
+                // Hoàn nhiều giao dịch: chỉ "Đã hoàn" khi không còn khoản nào đang chờ
+                boolean othersPending = refundRepository.existsByBookingIdAndStatusAndIdNot(
+                        booking.getId(), RefundRecordStatus.PENDING, refund.getId());
+                if (booking.getRefundStatus() == RefundStatus.PENDING && !othersPending) {
+                    booking.setRefundStatus(RefundStatus.REFUNDED);
+                }
                 notifyRefunded(booking, refund.getAmount());
             } else {
                 refund.setStatus(RefundRecordStatus.MANUAL_REQUIRED);

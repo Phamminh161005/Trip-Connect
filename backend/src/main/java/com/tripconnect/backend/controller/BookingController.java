@@ -73,6 +73,12 @@ public class BookingController {
         return bookingService.updatePassengers(currentUser.userId(), id, request.getPassengers());
     }
 
+    /** Tour riêng: gia hạn trả phần còn lại thêm 3 ngày (một lần). */
+    @PostMapping("/{id}/extend-balance")
+    public BookingResponses.Detail extendBalance(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable Long id) {
+        return bookingService.extendBalance(currentUser.userId(), id);
+    }
+
     /** Xem trước số tiền được hoàn nếu hủy ngay bây giờ. */
     @GetMapping("/{id}/cancellation-quote")
     public BookingResponses.CancellationQuote quote(@AuthenticationPrincipal AuthenticatedUser currentUser,

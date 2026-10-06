@@ -35,11 +35,39 @@ public final class BookingRules {
         return !today.isAfter(passengerListDeadline(startDate));
     }
 
+    // ----- Tour riêng: đặt cọc rồi trả phần còn lại -----
+
+    /** Khách có ngần này giờ để đặt cọc sau khi đồng ý đề xuất. */
+    public static final int DEPOSIT_HOLD_HOURS = 48;
+    /** Trả phần còn lại trước ngày đi ngần này ngày. */
+    public static final int BALANCE_DAYS_DOMESTIC = 7;
+    public static final int BALANCE_DAYS_INTERNATIONAL = 15;
+    /** Khách được tự gia hạn một lần. */
+    public static final int BALANCE_EXTENSION_DAYS = 3;
+    /** Hạn trả phần còn lại phải cách hạn đặt cọc ít nhất ngần này ngày, sát hơn thì trả một lần. */
+    public static final int MIN_DAYS_BETWEEN_PAYMENTS = 3;
+
+    public static LocalDate balanceDueDate(LocalDate startDate, boolean international) {
+        return startDate.minusDays(international ? BALANCE_DAYS_INTERNATIONAL : BALANCE_DAYS_DOMESTIC);
+    }
+
+    /** Còn đủ thời gian giữa hạn cọc và hạn trả nốt thì chia 2 lần; không thì trả toàn bộ một lần. */
+    public static boolean splitPayment(LocalDate depositDeadline, LocalDate balanceDueDate) {
+        return !balanceDueDate.isBefore(depositDeadline.plusDays(MIN_DAYS_BETWEEN_PAYMENTS));
+    }
+
+    /** Hạn mới khi gia hạn: thêm 3 ngày nhưng vẫn trước ngày đi. */
+    public static LocalDate extendedDueDate(LocalDate dueDate, LocalDate startDate) {
+        LocalDate extended = dueDate.plusDays(BALANCE_EXTENSION_DAYS);
+        LocalDate latest = startDate.minusDays(1);
+        return extended.isAfter(latest) ? latest : extended;
+    }
+
     public record RefundQuote(int percent, long amount, long daysBeforeDeparture) {
     }
 
     /**
-     * Tiền được hoàn khi KHÁCH tự hủy, theo chính sách chụp lại trong đơn:
+     * Tiền được hoàn khi KHÁCH tự hủy đơn đã thanh toán đủ, theo chính sách chụp lại trong đơn:
      * còn >= refundFullDays ngày -> 100%; >= refundPartialDays -> refundPartialPercent%; sát hơn -> 0.
      */
     public static RefundQuote customerRefund(Booking booking, LocalDate startDate, LocalDate today) {
@@ -47,6 +75,8 @@ public final class BookingRules {
         int percent = days >= booking.getRefundFullDays() ? 100
                 : days >= booking.getRefundPartialDays() ? booking.getRefundPartialPercent()
                 : 0;
-        return new RefundQuote(percent, booking.getTotalAmount() * percent / 100, days);
+        // Tour riêng: tiền cọc không hoàn, phần đã trả thêm hoàn theo tỷ lệ
+        long base = booking.getTotalAmount() - booking.getDepositAmount();
+        return new RefundQuote(percent, base * percent / 100, days);
     }
 }

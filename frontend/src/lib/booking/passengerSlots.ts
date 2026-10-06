@@ -61,8 +61,15 @@ export interface SlotRules {
 }
 
 /** Kiểm tra các ô (dùng trong superRefine của form). */
-export function checkSlots(slots: PassengerSlot[], rules: SlotRules, ctx: z.RefinementCtx, path: (string | number)[]) {
+/** Ô chưa điền gì (tour riêng cho lưu dần danh sách). */
+export const isBlankSlot = (s: PassengerSlot) => !s.fullName.trim() && !s.dateOfBirth && !s.passportNumber.trim();
+
+/**
+ * @param allowBlank tour riêng: bỏ qua ô để trống hoàn toàn (nhập dần, phải đủ trước khi trả phần còn lại)
+ */
+export function checkSlots(slots: PassengerSlot[], rules: SlotRules, ctx: z.RefinementCtx, path: (string | number)[], allowBlank = false) {
   slots.forEach((s, i) => {
+    if (allowBlank && isBlankSlot(s)) return;
     const issue = (field: keyof PassengerSlot, message: string) =>
       ctx.addIssue({ code: "custom", path: [...path, i, field], message });
     if (!s.fullName.trim()) issue("fullName", "Nhập họ tên hành khách");
@@ -85,7 +92,7 @@ export function checkSlots(slots: PassengerSlot[], rules: SlotRules, ctx: z.Refi
 }
 
 export const slotsToRequest = (slots: PassengerSlot[]): PassengerInput[] =>
-  slots.map((s) => ({ fullName: s.fullName.trim(), dateOfBirth: s.dateOfBirth, passportNumber: s.passportNumber.trim() || null }));
+  slots.filter((s) => !isBlankSlot(s)).map((s) => ({ fullName: s.fullName.trim(), dateOfBirth: s.dateOfBirth, passportNumber: s.passportNumber.trim() || null }));
 
 /** Khách tự sửa danh sách được tới hết ngày này, vd "2026-10-12". */
 export function passengerListDeadline(startDate: string): string {

@@ -48,7 +48,7 @@ public class CustomRequestAdminService {
                     cb.like(cb.lower(root.get("customer").get("email")), pattern, SearchPatterns.ESCAPE)));
         }
         var page = requestRepository.findAll(spec, StablePaging.of(pageable));
-        return PageResponse.of(page, assembler.toSummaries(page.getContent(), CustomRequestAssembler.Viewer.ADMIN));
+        return PageResponse.of(page, assembler.toSummaries(page.getContent(), CustomRequestAssembler.Viewer.ADMIN, null));
     }
 
     @Transactional(readOnly = true)

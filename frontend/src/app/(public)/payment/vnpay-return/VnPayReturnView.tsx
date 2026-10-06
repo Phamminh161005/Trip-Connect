@@ -40,11 +40,19 @@ export function VnPayReturnView() {
           ) : (
             <Result
               ok={query.data.success}
-              title={query.data.success ? "Đặt tour thành công!" : "Thanh toán chưa thành công"}
+              title={
+                !query.data.success
+                  ? "Thanh toán chưa thành công"
+                  : query.data.bookingStatus === "DEPOSIT_PAID"
+                    ? "Đặt cọc thành công!"
+                    : "Đặt tour thành công!"
+              }
               message={
-                query.data.success
-                  ? `Mã đơn ${query.data.bookingCode}. Xác nhận đặt tour đã được gửi tới email của bạn.`
-                  : `${query.data.message}. Bạn có thể thanh toán lại trong thời gian giữ chỗ.`
+                !query.data.success
+                  ? `${query.data.message}. Bạn có thể thanh toán lại trước khi hết hạn.`
+                  : query.data.bookingStatus === "DEPOSIT_PAID"
+                    ? `Mã đơn ${query.data.bookingCode}. Nhớ nhập đủ thông tin người đi và thanh toán phần còn lại trước hạn.`
+                    : `Mã đơn ${query.data.bookingCode}. Xác nhận đặt tour đã được gửi tới email của bạn.`
               }
             />
           )}

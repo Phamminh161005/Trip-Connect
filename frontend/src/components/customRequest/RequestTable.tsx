@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { travellersText } from "@/lib/booking/labels";
 import { STAGE_LABEL, budgetText, destinationsText, placeName, startWindowText, timeLeftText } from "@/lib/customRequest/labels";
@@ -69,6 +70,11 @@ export function RequestTable({ rows, basePath, viewer, dimmed }: { rows: CustomR
                     </span>
                   )}
                   {viewer !== "agent" && r.agentName && <span className="text-xs text-muted-foreground">{r.agentName}</span>}
+                  {r.unreadMessages > 0 && (
+                    <span className="flex items-center gap-1 text-xs font-semibold text-primary">
+                      <MessageCircle className="size-3.5" /> {r.unreadMessages} tin nhắn mới
+                    </span>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

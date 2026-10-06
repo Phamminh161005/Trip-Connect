@@ -2,6 +2,7 @@ package com.tripconnect.backend.job;
 
 import com.tripconnect.backend.enums.BookingStatus;
 import com.tripconnect.backend.repository.BookingRepository;
+import com.tripconnect.backend.service.booking.PaymentReminderService;
 import com.tripconnect.backend.service.booking.PaymentService;
 import com.tripconnect.backend.service.booking.TripReminderService;
 import com.tripconnect.backend.service.review.ReviewInviter;
@@ -32,6 +33,7 @@ public class BookingJobs {
     private final BookingRepository bookingRepository;
     private final PaymentService paymentService;
     private final TripReminderService tripReminderService;
+    private final PaymentReminderService paymentReminderService;
     private final ReviewInviter reviewInviter;
     private final Clock clock;
 
@@ -49,13 +51,35 @@ public class BookingJobs {
         }
     }
 
+    /** Mỗi 10 phút: tour riêng sắp hết hạn đặt cọc -> nhắc khách. */
+    @Scheduled(fixedDelay = 600_000, initialDelay = 90_000)
+    public void remindDeposits() {
+        int sent = paymentReminderService.remindDeposits();
+        if (sent > 0) log.info("Đã nhắc {} khách đặt cọc tour riêng", sent);
+    }
+
+    /** Mỗi giờ (phút 10): tour riêng quá hạn trả phần còn lại -> hỏi lại VNPay, chưa trả thì hủy (tiền cọc không hoàn). */
+    @Scheduled(cron = "0 10 * * * *", zone = "Asia/Ho_Chi_Minh")
+    public void settleOverdueBalances() {
+        for (Long id : bookingRepository.findOverdueBalanceIds(LocalDate.now(clock))) {
+            try {
+                paymentService.settleOverdueBalance(id);
+            } catch (RuntimeException e) {
+                log.warn("Xử lý đơn quá hạn trả phần còn lại id={} lỗi: {}", id, e.getMessage());
+            }
+        }
+    }
+
     /**
-     * Mỗi giờ từ 8h đến 20h: email nhắc lịch khởi hành (trước 3 ngày và 1 ngày) và nhắc lịch ít khách (trước 7 ngày).
+     * Mỗi giờ từ 8h đến 20h: email nhắc lịch khởi hành (trước 3 ngày và 1 ngày), nhắc lịch ít khách (trước 7 ngày)
+     * và nhắc trả phần còn lại của tour riêng (trước hạn 3 ngày và 1 ngày).
      * Chạy nhiều lượt trong ngày để gửi bù nếu backend tắt lúc sáng; đã gửi thì không gửi lại.
      */
     @Scheduled(cron = "0 0 8-20 * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendTripReminders() {
         tripReminderService.sendDueReminders();
+        int sent = paymentReminderService.remindBalances();
+        if (sent > 0) log.info("Đã nhắc {} khách trả phần còn lại tour riêng", sent);
     }
 
     /** 01:00 mỗi ngày: đơn đã thanh toán của chuyến đã về quá 3 ngày -> Hoàn thành + mời khách đánh giá tour. */

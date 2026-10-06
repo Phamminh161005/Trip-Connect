@@ -23,7 +23,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
      * (Đơn quá hạn nhả chỗ ngay, không cần đợi job đổi trạng thái.)
      */
     String HOLDS_SEATS = """
-            (b.status in (com.tripconnect.backend.enums.BookingStatus.PAID, com.tripconnect.backend.enums.BookingStatus.COMPLETED)
+            (b.status in (com.tripconnect.backend.enums.BookingStatus.DEPOSIT_PAID,
+                          com.tripconnect.backend.enums.BookingStatus.PAID, com.tripconnect.backend.enums.BookingStatus.COMPLETED)
              or (b.status = com.tripconnect.backend.enums.BookingStatus.PENDING_PAYMENT and b.holdExpiresAt > :now))
             """;
 
@@ -70,6 +71,25 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
     @Query("select coalesce(sum(b.adults + b.children), 0) from Booking b where b.departure.id = :departureId "
             + "and b.status = com.tripconnect.backend.enums.BookingStatus.PAID")
     long sumPaidSeats(@Param("departureId") Long departureId);
+
+    /** Tour riêng đã cọc mà quá hạn trả phần còn lại (hạn là hết ngày balanceDueDate). */
+    @Query("select b.id from Booking b where b.status = com.tripconnect.backend.enums.BookingStatus.DEPOSIT_PAID "
+            + "and b.balanceDueDate < :today order by b.id")
+    List<Long> findOverdueBalanceIds(@Param("today") LocalDate today);
+
+    /** Tour riêng chờ đặt cọc, sắp hết hạn và chưa nhắc. */
+    @Query("select b.id from Booking b where b.status = com.tripconnect.backend.enums.BookingStatus.PENDING_PAYMENT "
+            + "and b.depositAmount > 0 and b.paymentReminderStage < 1 and b.holdExpiresAt between :now and :before order by b.id")
+    List<Long> findDepositDueIds(@Param("now") LocalDateTime now, @Param("before") LocalDateTime before);
+
+    /** Tour riêng đã cọc, hạn trả phần còn lại trong vòng tới :lastDue (nhắc trước 3 ngày / 1 ngày). */
+    @Query("select b.id from Booking b where b.status = com.tripconnect.backend.enums.BookingStatus.DEPOSIT_PAID "
+            + "and b.balanceDueDate <= :lastDue and b.paymentReminderStage < 3 order by b.id")
+    List<Long> findBalanceDueIds(@Param("lastDue") LocalDate lastDue);
+
+    /** Đơn của tour riêng sinh ra từ một yêu cầu thiết kế tour. */
+    @Query("select b from Booking b where b.tour.customRequestId = :requestId order by b.id desc")
+    List<Booking> findByCustomRequestId(@Param("requestId") Long requestId);
 
     /** Đơn còn hiệu lực của một lịch (khi Agent hủy chuyến). */
     @Query("select b from Booking b where b.departure.id = :departureId and b.status in :statuses")

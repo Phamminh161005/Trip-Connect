@@ -5,6 +5,8 @@ public enum NotificationType {
     // Khách
     BOOKING_PAID,
     BOOKING_CANCELLED,
+    BOOKING_DEPOSIT_PAID,
+    BOOKING_PAYMENT_DUE,
     REFUND_COMPLETED,
     TRIP_REMINDER,
     REVIEW_INVITE,
@@ -19,6 +21,7 @@ public enum NotificationType {
     CUSTOM_PROPOSAL_EXPIRED,
     // Agent
     NEW_BOOKING,
+    BOOKING_BALANCE_EXTENDED,
     TOUR_APPROVED,
     TOUR_NEEDS_REVISION,
     TOUR_SUSPENDED,
@@ -34,6 +37,8 @@ public enum NotificationType {
     CUSTOM_PROPOSAL_ACCEPTED,
     CUSTOM_PROPOSAL_DUE_SOON,
     CUSTOM_PROPOSAL_OVERDUE,
+    // Khách và Agent
+    CHAT_MESSAGE,
     // Đơn vị tổ chức (Agent, hoặc Admin với tour của TripConnect)
     NEW_REVIEW,
     TOUR_REVIEW_HIDDEN,

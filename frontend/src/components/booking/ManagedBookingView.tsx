@@ -43,7 +43,7 @@ export function ManagedBookingView({ scope, id }: { scope: BookingScope; id: num
     }
   };
 
-  const cancellable = booking.status === "PAID" || booking.status === "PENDING_PAYMENT";
+  const cancellable = booking.status === "PAID" || booking.status === "DEPOSIT_PAID" || booking.status === "PENDING_PAYMENT";
 
   return (
     <>
@@ -52,6 +52,7 @@ export function ManagedBookingView({ scope, id }: { scope: BookingScope; id: num
         staff
         backHref={`/${scope}/bookings`}
         backLabel="Đơn đặt tour"
+        requestHref={booking.customRequestId ? `/${scope}/requests/${booking.customRequestId}` : undefined}
         actions={
           isAdmin &&
           cancellable && (
@@ -91,7 +92,11 @@ export function ManagedBookingView({ scope, id }: { scope: BookingScope; id: num
         onOpenChange={setCancelOpen}
         title={`Hủy đơn ${booking.code}?`}
         description={`Dùng khi có sự cố bất khả kháng (thiên tai, dịch bệnh, đơn vị tổ chức vi phạm...). ${
-          booking.status === "PAID" ? `Khách được hoàn 100% (${formatPrice(booking.totalAmount)}).` : "Đơn chưa thanh toán nên không phát sinh hoàn tiền."
+          booking.status === "PAID"
+            ? `Khách được hoàn 100% (${formatPrice(booking.totalAmount)}).`
+            : booking.status === "DEPOSIT_PAID" && booking.paymentPlan
+              ? `Khách được hoàn 100% tiền cọc đã trả (${formatPrice(booking.paymentPlan.depositAmount)}).`
+              : "Đơn chưa thanh toán nên không phát sinh hoàn tiền."
         }`}
         label="Lý do hủy"
         placeholder="Ví dụ: Bão số 5 đổ bộ Quảng Ninh, cấm tàu ra vịnh."

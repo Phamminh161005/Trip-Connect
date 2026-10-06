@@ -133,7 +133,7 @@ public class CustomRequestService {
     public PageResponse<CustomRequestResponses.Summary> listMine(Long userId, Pageable pageable) {
         Specification<CustomRequest> spec = (root, query, cb) -> cb.equal(root.get("customer").get("id"), userId);
         var page = requestRepository.findAll(spec, StablePaging.of(pageable));
-        return PageResponse.of(page, assembler.toSummaries(page.getContent(), CustomRequestAssembler.Viewer.CUSTOMER));
+        return PageResponse.of(page, assembler.toSummaries(page.getContent(), CustomRequestAssembler.Viewer.CUSTOMER, userId));
     }
 
     @Transactional(readOnly = true)

@@ -6,6 +6,7 @@ import com.tripconnect.backend.dto.customrequest.CustomRequestResponses;
 import com.tripconnect.backend.security.AuthenticatedUser;
 import com.tripconnect.backend.service.customrequest.CustomProposalService;
 import com.tripconnect.backend.service.customrequest.CustomRequestAgentService;
+import com.tripconnect.backend.service.customrequest.PrivateTripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ public class AgentCustomRequestController {
 
     private final CustomRequestAgentService agentService;
     private final CustomProposalService proposalService;
+    private final PrivateTripService privateTripService;
 
     /** tab: PENDING (chờ nhận) | ACCEPTED (đã nhận) | HISTORY (từ chối, hết hạn, bị thu hồi, quá hạn gửi đề xuất) */
     @GetMapping
@@ -46,6 +48,13 @@ public class AgentCustomRequestController {
     public CustomRequestResponses.Detail decline(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable Long id,
                                                  @Valid @RequestBody CustomRequestRequests.Reason body) {
         return agentService.decline(currentUser.userId(), id, body.getReason());
+    }
+
+    /** Hủy chuyến tour riêng đã chốt (khách được hoàn 100% số đã trả). */
+    @PostMapping("/{id}/cancel-trip")
+    public CustomRequestResponses.Detail cancelTrip(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable Long id,
+                                                    @Valid @RequestBody CustomRequestRequests.Reason body) {
+        return privateTripService.cancelTrip(currentUser.userId(), id, body.getReason());
     }
 
     /** Gửi đề xuất (bản đầu hoặc bản chỉnh sửa theo góp ý của khách). */

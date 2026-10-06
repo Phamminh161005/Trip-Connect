@@ -1,5 +1,6 @@
 // Khớp CustomRequestResponses / CustomRequestRequests của Backend
 import type { LocationResponse, TourCategoryResponse } from "./catalog";
+import type { BookingStatus } from "./booking";
 import type { AccommodationType, TourItineraryDay, TransportMode } from "./tour";
 
 export type CustomRequestStatus = "NEW" | "WAITING_AGENT" | "IN_PROGRESS" | "AGREED" | "CANCELLED" | "CLOSED";
@@ -30,6 +31,8 @@ export interface CustomRequestSummary {
   stage: RequestStage | null;
   /** Hạn Agent gửi đề xuất tiếp theo */
   proposalDeadline: string | null;
+  /** Tin nhắn người xem chưa đọc */
+  unreadMessages: number;
   createdAt: string;
 }
 
@@ -89,6 +92,10 @@ export interface CustomRequestDetail {
   canPropose: boolean;
   canAcceptProposal: boolean;
   canRequestRevision: boolean;
+  /** Đơn tour riêng sinh ra khi khách đồng ý đề xuất */
+  bookingId: number | null;
+  bookingCode: string | null;
+  bookingStatus: BookingStatus | null;
   createdAt: string;
 }
 

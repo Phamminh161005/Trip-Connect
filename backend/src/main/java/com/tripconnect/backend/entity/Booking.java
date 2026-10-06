@@ -128,6 +128,26 @@ public class Booking {
     /** Lần nhắc lịch khởi hành gần nhất đã gửi khách: 0 chưa, 1 trước 3 ngày, 2 trước 1 ngày. */
     @Column(nullable = false)
     private short reminderStage;
+
+    // ----- Trả 2 lần (tour riêng) -----
+
+    /** 0 = trả một lần. */
+    @Column(nullable = false)
+    private long depositAmount;
+
+    private LocalDateTime depositPaidAt;
+
+    /** Hạn trả phần còn lại (hết ngày này). */
+    private java.time.LocalDate balanceDueDate;
+
+    /** Khách đã dùng lượt gia hạn 3 ngày. */
+    @Column(nullable = false)
+    private boolean balanceExtended;
+
+    /** 0 chưa nhắc, 1 đã nhắc đặt cọc, 2 nhắc trả nốt trước 3 ngày, 3 trước 1 ngày. */
+    @Column(nullable = false)
+    private short paymentReminderStage;
+
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     private List<BookingPassenger> passengers = new ArrayList<>();
@@ -159,5 +179,24 @@ public class Booking {
 
     public int travellers() {
         return adults + children + infants;
+    }
+
+    public boolean paysInTwoParts() {
+        return depositAmount > 0;
+    }
+
+    /** Số tiền khách đã trả tới hiện tại (giới hạn trên của khoản hoàn). */
+    public long paidAmount() {
+        return switch (status) {
+            case DEPOSIT_PAID -> depositAmount;
+            case PAID, COMPLETED -> totalAmount;
+            default -> 0;
+        };
+    }
+
+    /** Lần thanh toán tiếp theo: cọc hoặc phần còn lại (đơn trả 2 lần), toàn bộ (đơn thường). */
+    public long nextPaymentAmount() {
+        if (status == BookingStatus.DEPOSIT_PAID) return totalAmount - depositAmount;
+        return paysInTwoParts() ? depositAmount : totalAmount;
     }
 }

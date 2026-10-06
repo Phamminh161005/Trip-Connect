@@ -8,6 +8,7 @@ import com.tripconnect.backend.entity.*;
 import com.tripconnect.backend.enums.AssignmentStatus;
 import com.tripconnect.backend.enums.CustomRequestStatus;
 import com.tripconnect.backend.repository.AgentProfileRepository;
+import com.tripconnect.backend.repository.ChatMessageRepository;
 import com.tripconnect.backend.repository.CustomProposalRepository;
 import com.tripconnect.backend.repository.CustomRequestAssignmentRepository;
 import com.tripconnect.backend.service.DisplayNames;
@@ -32,6 +33,8 @@ public class CustomRequestAssembler {
     private final AgentProfileRepository agentProfileRepository;
     private final CustomRequestAssignmentRepository assignmentRepository;
     private final CustomProposalRepository proposalRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final com.tripconnect.backend.repository.BookingRepository bookingRepository;
 
     static LocationResponse toLocation(Location l) {
         return new LocationResponse(l.getId(), l.getCountry(), l.getProvince());
@@ -74,28 +77,44 @@ public class CustomRequestAssembler {
         return r.getRevisionCount() > 0 ? CustomRequestResponses.Stage.REVISING : CustomRequestResponses.Stage.DRAFTING;
     }
 
-    /** Danh sách của khách / Admin (lần giao đang chờ lấy từ chính yêu cầu). */
-    public List<CustomRequestResponses.Summary> toSummaries(List<CustomRequest> requests, Viewer viewer) {
+    /**
+     * Danh sách của khách / Admin (lần giao đang chờ lấy từ chính yêu cầu).
+     *
+     * @param viewerId người xem — đếm tin nhắn chưa đọc (khách); Admin truyền null
+     */
+    public List<CustomRequestResponses.Summary> toSummaries(List<CustomRequest> requests, Viewer viewer, Long viewerId) {
         Map<Long, String> names = companyNames(requests.stream().map(CustomRequest::getAgent).filter(Objects::nonNull)
                 .map(User::getId).distinct().toList());
+        Map<Long, Long> unread = viewerId == null ? Map.of()
+                : unreadMessages(requests.stream().map(CustomRequest::getId).toList(), viewerId, false);
         return requests.stream().map(r -> summary(r, viewer,
                 r.getAgent() != null && agentVisibleTo(r, viewer) ? names.get(r.getAgent().getId()) : null,
-                null)).toList();
+                null, unread.getOrDefault(r.getId(), 0L))).toList();
     }
 
     /** Danh sách của Agent: mỗi dòng là một lần được giao. */
-    public List<CustomRequestResponses.Summary> toAgentSummaries(List<CustomRequestAssignment> assignments) {
-        return assignments.stream().map(a -> summary(a.getRequest(), Viewer.AGENT, null, a)).toList();
+    public List<CustomRequestResponses.Summary> toAgentSummaries(List<CustomRequestAssignment> assignments, Long agentId) {
+        Map<Long, Long> unread = unreadMessages(assignments.stream().map(a -> a.getRequest().getId()).toList(), agentId, true);
+        return assignments.stream().map(a -> summary(a.getRequest(), Viewer.AGENT, null, a,
+                unread.getOrDefault(a.getRequest().getId(), 0L))).toList();
     }
 
-    private CustomRequestResponses.Summary summary(CustomRequest r, Viewer viewer, String agentName, CustomRequestAssignment mine) {
+    /** [requestId -> số tin chưa đọc]; Agent chỉ tính cuộc trò chuyện của mình. */
+    private Map<Long, Long> unreadMessages(List<Long> requestIds, Long userId, boolean agentOnly) {
+        if (requestIds.isEmpty()) return Map.of();
+        return chatMessageRepository.countUnreadByRequest(requestIds, userId, agentOnly).stream()
+                .collect(Collectors.toMap(row -> ((Number) row[0]).longValue(), row -> ((Number) row[1]).longValue()));
+    }
+
+    private CustomRequestResponses.Summary summary(CustomRequest r, Viewer viewer, String agentName, CustomRequestAssignment mine,
+                                                   long unreadMessages) {
         return new CustomRequestResponses.Summary(
                 r.getId(), r.getCode(), r.getStatus(), toLocation(r.getDepartureLocation()), destinations(r),
                 r.getEarliestStart(), r.getLatestStart(), r.getDurationDays(), r.getAdults(), r.getChildren(), r.getInfants(),
                 r.getBudgetMin(), r.getBudgetMax(), customerName(r, viewer), agentName,
                 mine != null ? mine.getStatus() : null,
                 mine != null ? mine.getDeadline() : null,
-                stage(r), r.getProposalDeadline(),
+                stage(r), r.getProposalDeadline(), unreadMessages,
                 r.getCreatedAt());
     }
 
@@ -117,6 +136,9 @@ public class CustomRequestAssembler {
         boolean showAgent = r.getAgent() != null && agentVisibleTo(r, viewer);
         List<CustomProposal> proposals = visibleProposals(r, viewer, mine);
         CustomProposal latest = proposals.isEmpty() ? null : proposals.get(proposals.size() - 1);
+        // Agent bị thay / khách khác không tới được đây; đơn chỉ có khi đã chốt
+        Booking booking = r.getAgreedAt() == null ? null
+                : bookingRepository.findByCustomRequestId(r.getId()).stream().findFirst().orElse(null);
         return new CustomRequestResponses.Detail(
                 r.getId(), r.getCode(), r.getStatus(), toLocation(r.getDepartureLocation()), destinations(r),
                 r.getCategories().stream().sorted(Comparator.comparing(TourCategory::getId))
@@ -138,6 +160,9 @@ public class CustomRequestAssembler {
                 canPropose(r, viewer, mine),
                 viewer == Viewer.CUSTOMER && CustomRequestRules.canAcceptProposal(r, latest),
                 viewer == Viewer.CUSTOMER && CustomRequestRules.canRequestRevision(r, latest),
+                booking == null ? null : booking.getId(),
+                booking == null ? null : booking.getCode(),
+                booking == null ? null : booking.getStatus(),
                 r.getCreatedAt());
     }
 

@@ -5,9 +5,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFieldArray, useForm, useWatch, type Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CreditCard, UserPen, XCircle } from "lucide-react";
+import { CalendarPlus, CreditCard, UserPen, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { BookingDetailView } from "@/components/booking/BookingDetailView";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { PassengerSlotsFields, type PassengerSlotsValues } from "@/components/booking/PassengerSlotsFields";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,9 +16,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, errorMessage } from "@/lib/api/errors";
-import { cancelMyBooking, getCancellationQuote, getMyBooking, payBooking, updateBookingPassengers } from "@/lib/api/bookings";
+import {
+  cancelMyBooking,
+  extendBalance,
+  getCancellationQuote,
+  getMyBooking,
+  payBooking,
+  updateBookingPassengers,
+} from "@/lib/api/bookings";
 import { checkSlots, passengerSlotSchema, slotsFromBooking, slotsToRequest } from "@/lib/booking/passengerSlots";
 import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
+import { withErrorToast } from "@/lib/withErrorToast";
 import { formatDay, formatPrice } from "@/lib/tour/labels";
 import type { BookingDetail } from "@/types/booking";
 import { MY_BOOKINGS_KEY } from "../MyBookingList";
@@ -30,10 +39,17 @@ export function MyBookingView({ id }: { id: number }) {
   const [paying, setPaying] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [passengersOpen, setPassengersOpen] = useState(false);
+  const [extending, setExtending] = useState(false);
 
   if (query.isPending) return <Skeleton className="h-96 rounded-2xl" />;
   if (query.isError) return <p className="text-destructive">{errorMessage(query.error)}</p>;
   const booking = query.data;
+  const plan = booking.paymentPlan;
+  const travellers = booking.adults + booking.children + booking.infants;
+  // Trả phần còn lại cần đủ danh sách người đi (Backend cũng chặn)
+  const balanceBlocked = booking.status === "DEPOSIT_PAID" && booking.passengers.length < travellers;
+  const payLabel =
+    booking.status === "DEPOSIT_PAID" ? "Thanh toán phần còn lại" : plan ? "Đặt cọc" : "Thanh toán";
 
   const pay = async () => {
     setPaying(true);
@@ -53,6 +69,7 @@ export function MyBookingView({ id }: { id: number }) {
         booking={booking}
         backHref="/account/bookings"
         backLabel="Đơn đặt của tôi"
+        requestHref={booking.customRequestId ? `/account/requests/${booking.customRequestId}` : undefined}
         onHoldExpire={() => queryClient.invalidateQueries({ queryKey: MY_BOOKINGS_KEY })}
         passengerAction={
           booking.canEditPassengers && (
@@ -64,8 +81,18 @@ export function MyBookingView({ id }: { id: number }) {
         actions={
           <>
             {booking.canPay && (
-              <Button className="rounded-xl" disabled={paying} onClick={pay}>
-                {paying ? <Spinner /> : <CreditCard />} Thanh toán {formatPrice(booking.totalAmount)}
+              <Button
+                className="rounded-xl"
+                disabled={paying || balanceBlocked}
+                onClick={pay}
+                title={balanceBlocked ? "Nhập đủ thông tin người đi trước khi thanh toán phần còn lại" : undefined}
+              >
+                {paying ? <Spinner /> : <CreditCard />} {payLabel} {formatPrice(booking.amountDue)}
+              </Button>
+            )}
+            {plan?.canExtend && (
+              <Button variant="outline" className="rounded-xl" onClick={() => setExtending(true)}>
+                <CalendarPlus /> Gia hạn 3 ngày
               </Button>
             )}
             {booking.canCancel && (
@@ -88,6 +115,19 @@ export function MyBookingView({ id }: { id: number }) {
           }}
         />
       )}
+      {plan && (
+        <ConfirmDialog
+          open={extending}
+          onOpenChange={setExtending}
+          title="Gia hạn thanh toán phần còn lại?"
+          description={`Hạn trả ${formatPrice(plan.balanceAmount)} được dời thêm 3 ngày (vẫn trước ngày khởi hành). Mỗi đơn chỉ gia hạn được 1 lần.`}
+          confirmLabel="Gia hạn"
+          onConfirm={async () => {
+            queryClient.setQueryData(key, await withErrorToast(() => extendBalance(booking.id)));
+            toast.success("Đã gia hạn thêm 3 ngày");
+          }}
+        />
+      )}
       {cancelOpen && (
         <CancelDialog
           booking={booking}
@@ -105,12 +145,16 @@ export function MyBookingView({ id }: { id: number }) {
 
 const passengerListSchema = z.object({ passengers: z.array(passengerSlotSchema) });
 
-/** Sửa danh sách hành khách — vẫn đủ đúng số khách từng loại đã đặt. */
+/**
+ * Sửa danh sách hành khách — vẫn đủ đúng số khách từng loại đã đặt.
+ * Tour riêng được lưu dần (để trống người chưa có thông tin), phải đủ trước khi trả phần còn lại.
+ */
 function PassengerListDialog({ booking, onClose, onDone }: { booking: BookingDetail; onClose: () => void; onDone: (b: BookingDetail) => void }) {
+  const partial = booking.customRequestId !== null;
   const form = useForm<PassengerSlotsValues>({
     resolver: zodResolver(
       passengerListSchema.superRefine((v, ctx) =>
-        checkSlots(v.passengers, { startDate: booking.startDate, international: booking.international }, ctx, ["passengers"]),
+        checkSlots(v.passengers, { startDate: booking.startDate, international: booking.international }, ctx, ["passengers"], partial),
       ),
     ),
     defaultValues: { passengers: slotsFromBooking(booking, booking.passengers) },
@@ -143,6 +187,10 @@ function PassengerListDialog({ booking, onClose, onDone }: { booking: BookingDet
             Nhập đúng họ tên, ngày sinh như giấy tờ tùy thân
             {booking.international ? " và số hộ chiếu" : ""}. Loại khách tính theo tuổi vào ngày đi. Sửa được tới hết ngày{" "}
             {formatDay(booking.passengerListDeadline)}.
+            {partial &&
+              ` Chưa có đủ thông tin thì cứ để trống người đó và lưu trước; cần nhập đủ trước hết ngày ${formatDay(
+                booking.paymentPlan?.balanceDueDate ?? booking.passengerListDeadline,
+              )}.`}
           </DialogDescription>
         </DialogHeader>
         <form id="passenger-list-form" noValidate onKeyDown={focusNextOnEnter} onSubmit={form.handleSubmit(submit)}>

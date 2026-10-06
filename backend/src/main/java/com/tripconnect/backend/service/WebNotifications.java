@@ -37,6 +37,26 @@ public final class WebNotifications {
                 "/account/bookings/" + bookingId);
     }
 
+    // ----- Tour riêng: đặt cọc rồi trả phần còn lại -----
+
+    public static WebMessage depositPaid(Long bookingId, String code, long balance, LocalDate dueDate) {
+        return new WebMessage(NotificationType.BOOKING_DEPOSIT_PAID, "Đã nhận tiền cọc đơn " + code,
+                "Còn lại " + EmailTemplates.money(balance) + ", hạn thanh toán " + EmailTemplates.day(dueDate)
+                        + ". Nhớ nhập đủ thông tin người đi trước hạn này", "/account/bookings/" + bookingId);
+    }
+
+    public static WebMessage depositDue(Long bookingId, String code, java.time.LocalDateTime deadline) {
+        return new WebMessage(NotificationType.BOOKING_PAYMENT_DUE, "Sắp hết hạn đặt cọc đơn " + code,
+                "Đặt cọc trước " + deadline.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+                        + ", quá hạn đơn sẽ tự hủy", "/account/bookings/" + bookingId);
+    }
+
+    public static WebMessage balanceDue(Long bookingId, String code, long balance, LocalDate dueDate, boolean canExtend) {
+        return new WebMessage(NotificationType.BOOKING_PAYMENT_DUE, "Sắp tới hạn thanh toán phần còn lại - đơn " + code,
+                EmailTemplates.money(balance) + " · hạn " + EmailTemplates.day(dueDate)
+                        + (canExtend ? " · có thể gia hạn 1 lần thêm 3 ngày" : ""), "/account/bookings/" + bookingId);
+    }
+
     public static WebMessage tripReminder(Long bookingId, String tourTitle, long daysLeft, String meetingTime,
                                           String meetingPoint) {
         return new WebMessage(NotificationType.TRIP_REMINDER, "Chuyến đi của bạn " + countdown(daysLeft),
@@ -159,7 +179,28 @@ public final class WebNotifications {
                 "/admin/requests/" + requestId);
     }
 
+    /** Tin nhắn mới (chỉ báo khi người nhận đang không có tin chưa đọc trong cuộc trò chuyện này). */
+    public static WebMessage chatMessage(String link, String code, String senderName) {
+        return new WebMessage(NotificationType.CHAT_MESSAGE, "Tin nhắn mới - yêu cầu " + code,
+                senderName + " đã nhắn tin cho bạn", link);
+    }
+
     // ===== Agent =====
+
+    public static WebMessage privateDepositPaidForAgent(Long bookingId, String code, String tourTitle, long deposit) {
+        return new WebMessage(NotificationType.BOOKING_DEPOSIT_PAID, "Khách đã đặt cọc tour riêng - đơn " + code,
+                tourTitle + " · cọc " + EmailTemplates.money(deposit), "/agent/bookings/" + bookingId);
+    }
+
+    public static WebMessage privateBalancePaidForAgent(Long bookingId, String code, String tourTitle) {
+        return new WebMessage(NotificationType.NEW_BOOKING, "Khách đã thanh toán đủ tour riêng - đơn " + code, tourTitle,
+                "/agent/bookings/" + bookingId);
+    }
+
+    public static WebMessage balanceExtended(Long bookingId, String code, LocalDate newDueDate) {
+        return new WebMessage(NotificationType.BOOKING_BALANCE_EXTENDED, "Khách gia hạn thanh toán - đơn " + code,
+                "Hạn trả phần còn lại mới: " + EmailTemplates.day(newDueDate), "/agent/bookings/" + bookingId);
+    }
 
     public static WebMessage newBooking(Long bookingId, String code, String tourTitle, LocalDate startDate, int travellers,
                                         long amount) {

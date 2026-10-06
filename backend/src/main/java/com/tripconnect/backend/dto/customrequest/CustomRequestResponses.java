@@ -6,6 +6,7 @@ import com.tripconnect.backend.dto.TourCategoryResponse;
 import com.tripconnect.backend.dto.tour.TourResponses;
 import com.tripconnect.backend.enums.AccommodationType;
 import com.tripconnect.backend.enums.AssignmentStatus;
+import com.tripconnect.backend.enums.BookingStatus;
 import com.tripconnect.backend.enums.CustomRequestStatus;
 import com.tripconnect.backend.enums.ProposalStatus;
 import com.tripconnect.backend.enums.TransportMode;
@@ -48,6 +49,8 @@ public final class CustomRequestResponses {
             Stage stage,
             /* Hạn Agent gửi đề xuất tiếp theo */
             LocalDateTime proposalDeadline,
+            /* Tin nhắn người xem chưa đọc */
+            long unreadMessages,
             LocalDateTime createdAt
     ) {
     }
@@ -106,6 +109,10 @@ public final class CustomRequestResponses {
             boolean canPropose,
             boolean canAcceptProposal,
             boolean canRequestRevision,
+            /* Đơn tour riêng sinh ra khi khách đồng ý đề xuất */
+            Long bookingId,
+            String bookingCode,
+            BookingStatus bookingStatus,
             LocalDateTime createdAt
     ) {
     }

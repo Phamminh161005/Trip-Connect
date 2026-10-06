@@ -53,7 +53,8 @@ public class BookingAssembler {
                 b.getDeparture().getStartDate(), b.getDeparture().endDate(b.getTour().getDurationDays()),
                 b.getAdults(), b.getChildren(), b.getInfants(), b.getTotalAmount(), b.getRefundAmount(),
                 b.getContactName(), b.getCustomer().getEmail(), b.getHoldExpiresAt(),
-                !reviewed.contains(b.getId()) && ReviewRules.canWrite(b, now), b.getCreatedAt())).toList();
+                !reviewed.contains(b.getId()) && ReviewRules.canWrite(b, now),
+                b.getTour().getCustomRequestId(), b.getDepositAmount(), b.getBalanceDueDate(), b.getCreatedAt())).toList();
     }
 
     public BookingResponses.Detail toDetail(Booking b, Viewer viewer) {
@@ -62,11 +63,21 @@ public class BookingAssembler {
         boolean staff = viewer != Viewer.CUSTOMER;
         LocalDateTime now = LocalDateTime.now(clock);
         boolean pendingAlive = b.getStatus() == BookingStatus.PENDING_PAYMENT && b.getHoldExpiresAt().isAfter(now);
-        boolean beforeDeparture = departure.getStartDate().isAfter(LocalDate.now(clock));
+        LocalDate today = LocalDate.now(clock);
+        boolean beforeDeparture = departure.getStartDate().isAfter(today);
+        boolean depositPaid = b.getStatus() == BookingStatus.DEPOSIT_PAID;
+        boolean balanceOpen = depositPaid && !b.getBalanceDueDate().isBefore(today);
+        boolean canPay = pendingAlive || balanceOpen;
+        BookingResponses.PaymentPlan plan = b.paysInTwoParts()
+                ? new BookingResponses.PaymentPlan(b.getDepositAmount(), b.getTotalAmount() - b.getDepositAmount(),
+                b.getDepositPaidAt(), b.getBalanceDueDate(), b.isBalanceExtended(),
+                balanceOpen && !b.isBalanceExtended()
+                        && BookingRules.extendedDueDate(b.getBalanceDueDate(), departure.getStartDate()).isAfter(b.getBalanceDueDate()))
+                : null;
 
         List<BookingResponses.PaymentView> payments = staff
                 ? paymentRepository.findByBookingIdOrderByIdDesc(b.getId()).stream()
-                .map(p -> new BookingResponses.PaymentView(p.getId(), p.getTxnRef(), p.getAmount(), p.getStatus(),
+                .map(p -> new BookingResponses.PaymentView(p.getId(), p.getTxnRef(), p.getAmount(), p.getPurpose(), p.getStatus(),
                         p.getBankCode(), p.getVnpTransactionNo(), p.getVnpResponseCode(), p.getCreatedAt()))
                 .toList()
                 : List.of();
@@ -87,14 +98,17 @@ public class BookingAssembler {
                 b.getContactName(), b.getContactPhone(), b.getContactEmail(), b.getNote(),
                 b.getPassengers().stream().map(BookingAssembler::toPassenger).toList(),
                 BookingRules.passengerListDeadline(departure.getStartDate()),
-                viewer == Viewer.CUSTOMER && (pendingAlive || b.getStatus() == BookingStatus.PAID)
+                viewer == Viewer.CUSTOMER && (pendingAlive || depositPaid || b.getStatus() == BookingStatus.PAID)
                         && BookingRules.passengerListOpen(departure.getStartDate(), LocalDate.now(clock)),
                 new BookingResponses.RefundPolicy(b.getRefundFullDays(), b.getRefundPartialDays(), b.getRefundPartialPercent()),
                 b.getHoldExpiresAt(), b.getPaidAt(), b.getCompletedAt(), b.getCancelledAt(), b.getCancelledBy(),
                 b.getCancelReason(), b.getRefundAmount(), b.getRefundStatus(),
                 payments, refunds,
-                pendingAlive,
-                pendingAlive || (b.getStatus() == BookingStatus.PAID && beforeDeparture),
+                canPay,
+                pendingAlive || ((b.getStatus() == BookingStatus.PAID || depositPaid) && beforeDeparture),
+                canPay ? b.nextPaymentAmount() : 0,
+                tour.getCustomRequestId(),
+                plan,
                 reviewId,
                 viewer == Viewer.CUSTOMER && reviewId == null && ReviewRules.canWrite(b, now),
                 b.getCreatedAt());

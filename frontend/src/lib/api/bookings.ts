@@ -30,6 +30,9 @@ export const payBooking = (id: number) => apiRequest<{ paymentUrl: string }>(`/a
 export const updateBookingPassengers = (id: number, passengers: PassengerInput[]) =>
   apiRequest<BookingDetail>(`/api/bookings/${id}/passengers`, { method: "PUT", body: { passengers } });
 
+/** Tour riêng: gia hạn trả phần còn lại thêm 3 ngày (một lần). */
+export const extendBalance = (id: number) => apiRequest<BookingDetail>(`/api/bookings/${id}/extend-balance`, { method: "POST" });
+
 export const getCancellationQuote = (id: number) => apiRequest<CancellationQuote>(`/api/bookings/${id}/cancellation-quote`);
 
 export const cancelMyBooking = (id: number, reason: string | null) =>

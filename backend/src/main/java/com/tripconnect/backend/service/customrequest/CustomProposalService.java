@@ -16,6 +16,8 @@ import com.tripconnect.backend.repository.CustomRequestRepository;
 import com.tripconnect.backend.service.EmailTemplates;
 import com.tripconnect.backend.service.NotificationEvents;
 import com.tripconnect.backend.service.WebNotifications;
+import com.tripconnect.backend.service.booking.PrivateTourFactory;
+import com.tripconnect.backend.entity.Booking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,7 @@ public class CustomProposalService {
     private final CustomProposalRepository proposalRepository;
     private final CustomRequestAssembler assembler;
     private final CustomRequestLifecycle lifecycle;
+    private final PrivateTourFactory privateTourFactory;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
@@ -157,6 +160,11 @@ public class CustomProposalService {
         request.setStatus(CustomRequestStatus.AGREED);
         request.setAgreedAt(now);
         request.setLastActivityAt(now);
+        Booking booking = privateTourFactory.create(request, p, now);
+        eventPublisher.publishEvent(new NotificationEvents.UserEmailEvent(request.getCustomer().getEmail(),
+                EmailTemplates.privateBookingCreated(booking.getCode(), p.getTitle(), p.getStartDate(), booking.getTotalAmount(),
+                        booking.nextPaymentAmount(), booking.paysInTwoParts(), booking.getHoldExpiresAt(),
+                        lifecycle.url("/account/bookings/" + booking.getId()))));
 
         String path = "/agent/requests/" + request.getId();
         eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(p.getAgent().getId(),

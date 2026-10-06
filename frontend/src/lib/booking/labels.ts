@@ -1,4 +1,12 @@
-import type { BookingStatus, CancelledBy, PassengerType, PaymentStatus, RefundRecordStatus, RefundStatus } from "@/types/booking";
+import type {
+  BookingStatus,
+  CancelledBy,
+  PassengerType,
+  PaymentPurpose,
+  PaymentStatus,
+  RefundRecordStatus,
+  RefundStatus,
+} from "@/types/booking";
 
 // Giới hạn — khớp app.booking.* của Backend
 export const BOOKING_RULES = {
@@ -10,6 +18,7 @@ export const BOOKING_RULES = {
 
 export const BOOKING_STATUS: Record<BookingStatus, { label: string; className: string }> = {
   PENDING_PAYMENT: { label: "Chờ thanh toán", className: "bg-amber-100 text-amber-900" },
+  DEPOSIT_PAID: { label: "Đã đặt cọc", className: "bg-violet-100 text-violet-900" },
   PAID: { label: "Đã thanh toán", className: "bg-emerald-100 text-emerald-900" },
   COMPLETED: { label: "Hoàn thành", className: "bg-sky-100 text-sky-900" },
   CANCELLED: { label: "Đã hủy", className: "bg-muted text-muted-foreground" },
@@ -40,6 +49,12 @@ export const PAYMENT_STATUS: Record<PaymentStatus, string> = {
   SUCCESS: "Thành công",
   FAILED: "Thất bại",
   EXPIRED: "Hết hạn",
+};
+
+export const PAYMENT_PURPOSE: Record<PaymentPurpose, string> = {
+  FULL: "Toàn bộ",
+  DEPOSIT: "Đặt cọc",
+  BALANCE: "Phần còn lại",
 };
 
 export const REFUND_RECORD_STATUS: Record<RefundRecordStatus, string> = {

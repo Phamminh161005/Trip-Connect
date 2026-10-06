@@ -90,7 +90,8 @@ public class BookingManagementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch khởi hành"));
         Tour tour = departure.getTour();
         List<BookingResponses.ManifestBooking> bookings = bookingRepository
-                .findWithPassengersByDepartureId(departureId, List.of(BookingStatus.PAID, BookingStatus.COMPLETED)).stream()
+                .findWithPassengersByDepartureId(departureId,
+                        List.of(BookingStatus.DEPOSIT_PAID, BookingStatus.PAID, BookingStatus.COMPLETED)).stream()
                 .map(b -> new BookingResponses.ManifestBooking(b.getId(), b.getCode(), b.getStatus(), b.getContactName(),
                         b.getContactPhone(), b.getContactEmail(), b.getNote(),
                         b.getAdults(), b.getChildren(), b.getInfants(),
@@ -106,7 +107,7 @@ public class BookingManagementService {
     public BookingResponses.Detail cancelByAdmin(Long bookingId, String reason) {
         Booking booking = bookingRepository.findByIdForUpdate(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt tour"));
-        cancellation.cancel(booking, CancelledBy.ADMIN, reason.trim(), booking.getTotalAmount(), true);
+        cancellation.cancel(booking, CancelledBy.ADMIN, reason.trim(), booking.paidAmount(), true);
         return assembler.toDetail(booking, BookingAssembler.Viewer.ADMIN);
     }
 }

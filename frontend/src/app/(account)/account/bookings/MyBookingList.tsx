@@ -18,6 +18,7 @@ type Tab = BookingStatus | "ALL";
 const TABS: { value: Tab; label: string }[] = [
   { value: "ALL", label: "Tất cả" },
   { value: "PENDING_PAYMENT", label: "Chờ thanh toán" },
+  { value: "DEPOSIT_PAID", label: "Đã đặt cọc" },
   { value: "PAID", label: "Sắp đi" },
   { value: "COMPLETED", label: "Hoàn thành" },
   { value: "CANCELLED", label: "Đã hủy" },

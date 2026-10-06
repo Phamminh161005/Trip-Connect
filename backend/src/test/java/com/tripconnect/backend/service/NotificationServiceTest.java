@@ -3,6 +3,7 @@ package com.tripconnect.backend.service;
 import com.tripconnect.backend.entity.Notification;
 import com.tripconnect.backend.enums.NotificationType;
 import com.tripconnect.backend.enums.UserRole;
+import com.tripconnect.backend.realtime.RealtimePublisher;
 import com.tripconnect.backend.repository.NotificationRepository;
 import com.tripconnect.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,12 +30,13 @@ class NotificationServiceTest {
 
     @Mock private NotificationRepository notificationRepository;
     @Mock private UserRepository userRepository;
+    @Mock private RealtimePublisher realtimePublisher;
 
     private NotificationService service;
 
     @BeforeEach
     void setUp() {
-        service = new NotificationService(notificationRepository, userRepository, Clock.fixed(NOW.atZone(VN).toInstant(), VN));
+        service = new NotificationService(notificationRepository, userRepository, realtimePublisher, Clock.fixed(NOW.atZone(VN).toInstant(), VN));
     }
 
     private static Notification notification(long id) {

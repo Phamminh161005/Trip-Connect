@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, FilePen, Hourglass, Info, PartyPopper, PenTool, Send, X } from "lucide-react";
+import { ArrowLeft, Ban, Check, FilePen, Hourglass, Info, PartyPopper, PenTool, Send, Ticket, X } from "lucide-react";
 import { toast } from "sonner";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ReasonDialog } from "@/components/common/ReasonDialog";
 import { ProposalSection } from "@/components/customRequest/ProposalSection";
@@ -15,7 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errorMessage } from "@/lib/api/errors";
 import { withErrorToast } from "@/lib/withErrorToast";
-import { acceptCustomRequest, declineCustomRequest, getAgentCustomRequest } from "@/lib/api/customRequests";
+import { acceptCustomRequest, cancelPrivateTrip, declineCustomRequest, getAgentCustomRequest } from "@/lib/api/customRequests";
+import { BOOKING_STATUS } from "@/lib/booking/labels";
 import { CUSTOM_REQUEST_RULES, timeLeftText } from "@/lib/customRequest/labels";
 import { formatDateTime } from "@/lib/format";
 import { AGENT_REQUESTS_KEY } from "../AgentRequestList";
@@ -26,6 +28,7 @@ export function AgentRequestView({ id }: { id: number }) {
   const queryClient = useQueryClient();
   const [accepting, setAccepting] = useState(false);
   const [declining, setDeclining] = useState(false);
+  const [cancellingTrip, setCancellingTrip] = useState(false);
 
   if (query.isPending) return <Skeleton className="h-96 rounded-2xl" />;
   if (query.isError) return <p className="text-destructive">{errorMessage(query.error)}</p>;
@@ -110,7 +113,30 @@ export function AgentRequestView({ id }: { id: number }) {
         <Alert className="rounded-2xl border-primary/30 bg-primary/5">
           <PartyPopper />
           <AlertTitle>Khách đã đồng ý đề xuất lúc {formatDateTime(r.agreedAt)}</AlertTitle>
-          <AlertDescription>Bước tiếp theo: tạo tour riêng để khách đặt cọc {CUSTOM_REQUEST_RULES.depositPercent}%.</AlertDescription>
+          <AlertDescription className="flex flex-col items-start gap-3">
+            <span>
+              Hệ thống đã tạo tour riêng và đơn {r.bookingCode}
+              {r.bookingStatus && ` (${BOOKING_STATUS[r.bookingStatus].label.toLowerCase()})`}. Khách đặt cọc{" "}
+              {CUSTOM_REQUEST_RULES.depositPercent}% rồi trả phần còn lại trước ngày đi; bạn nhận thông báo mỗi khi khách thanh toán.
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {r.bookingId && (
+                <Button asChild size="sm" className="rounded-lg">
+                  <Link href={`/agent/bookings/${r.bookingId}`}>
+                    <Ticket /> Xem đơn đặt tour
+                  </Link>
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-lg text-destructive hover:text-destructive"
+                onClick={() => setCancellingTrip(true)}
+              >
+                <Ban /> Hủy chuyến
+              </Button>
+            </div>
+          </AlertDescription>
         </Alert>
       )}
       {(r.myAssignmentStatus === "EXPIRED" ||
@@ -137,6 +163,7 @@ export function AgentRequestView({ id }: { id: number }) {
           emptyText={r.canPropose ? "Bạn chưa gửi đề xuất nào cho yêu cầu này." : undefined}
         />
       )}
+      {r.myAssignmentStatus === "ACCEPTED" && <ChatPanel scope="agent" requestId={r.id} />}
       <RequestInfo request={r} />
 
       <ConfirmDialog
@@ -162,6 +189,20 @@ export function AgentRequestView({ id }: { id: number }) {
         onConfirm={async (reason) => {
           refresh(await withErrorToast(() => declineCustomRequest(r.id, reason)));
           toast.success("Đã từ chối yêu cầu");
+        }}
+      />
+      <ReasonDialog
+        open={cancellingTrip}
+        onOpenChange={setCancellingTrip}
+        title="Hủy chuyến đi đã chốt?"
+        description="Đơn của khách bị hủy, khách được hoàn 100% số tiền đã trả và nhận email thông báo. Yêu cầu sẽ đóng lại."
+        label="Lý do hủy chuyến"
+        placeholder="Ví dụ: đường lên Hà Giang bị sạt lở, không đảm bảo an toàn cho đoàn"
+        confirmLabel="Hủy chuyến"
+        hint="Lý do được gửi kèm trong email tới khách."
+        onConfirm={async (reason) => {
+          refresh(await withErrorToast(() => cancelPrivateTrip(r.id, reason)));
+          toast.success("Đã hủy chuyến, khách sẽ được hoàn tiền");
         }}
       />
     </div>

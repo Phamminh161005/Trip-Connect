@@ -10,6 +10,7 @@ package com.tripconnect.backend.enums;
  *  PUBLISHED / HIDDEN --Admin đình chỉ--> SUSPENDED --bỏ đình chỉ--> PUBLISHED
  * </pre>
  * Tour của TripConnect (Admin tạo) không qua duyệt: DRAFT/HIDDEN --công khai--> PUBLISHED.
+ * PRIVATE: tour riêng tạo từ đề xuất khách đã đồng ý — chỉ khách đó đặt, không hiện ở tìm kiếm, không sửa được.
  */
 public enum TourStatus {
     DRAFT,
@@ -20,7 +21,8 @@ public enum TourStatus {
     /** Agent tự tạm ẩn — không nhận booking mới, lịch đã có khách vẫn khởi hành. */
     HIDDEN,
     /** Admin đình chỉ do vi phạm — Agent không tự mở lại được. */
-    SUSPENDED;
+    SUSPENDED,
+    PRIVATE;
 
     /** Nội dung được sửa (sửa khi đang bán thì tour chuyển về Nháp để duyệt lại). */
     public boolean contentEditable() {

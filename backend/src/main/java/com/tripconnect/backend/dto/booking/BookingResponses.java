@@ -34,14 +34,27 @@ public final class BookingResponses {
             LocalDateTime holdExpiresAt,
             /* Đơn hoàn thành, chưa đánh giá, còn trong hạn */
             boolean canReview,
+            /* Tour riêng: yêu cầu thiết kế tour sinh ra đơn; trả 2 lần thì có tiền cọc và hạn trả phần còn lại */
+            Long customRequestId,
+            long depositAmount,
+            LocalDate balanceDueDate,
             LocalDateTime createdAt
     ) {
+    }
+
+    /**
+     * Thanh toán 2 lần của tour riêng (null với đơn trả một lần).
+     *
+     * @param canExtend khách còn được gia hạn 3 ngày
+     */
+    public record PaymentPlan(long depositAmount, long balanceAmount, LocalDateTime depositPaidAt, LocalDate balanceDueDate,
+                              boolean balanceExtended, boolean canExtend) {
     }
 
     public record Passenger(Long id, String fullName, LocalDate dateOfBirth, PassengerType type, String passportNumber) {
     }
 
-    public record PaymentView(Long id, String txnRef, long amount, PaymentStatus status, String bankCode,
+    public record PaymentView(Long id, String txnRef, long amount, PaymentPurpose purpose, PaymentStatus status, String bankCode,
                               String transactionNo, String responseCode, LocalDateTime createdAt) {
     }
 
@@ -98,6 +111,10 @@ public final class BookingResponses {
             /* Khách: được thanh toán tiếp / được hủy không */
             boolean canPay,
             boolean canCancel,
+            /* Số tiền của lần thanh toán tiếp theo (cọc / phần còn lại / toàn bộ) */
+            long amountDue,
+            Long customRequestId,
+            PaymentPlan paymentPlan,
             /* Đánh giá: id nếu đã viết; canReview = còn được viết mới */
             Long reviewId,
             boolean canReview,

@@ -147,6 +147,9 @@ public class Tour {
     /** Lần đầu được công khai. */
     private LocalDateTime publishedAt;
 
+    /** Tour riêng (PRIVATE): yêu cầu thiết kế tour sinh ra nó. */
+    private Long customRequestId;
+
     @Column(precision = 3, scale = 2)
     private BigDecimal rating;
 
@@ -176,6 +179,10 @@ public class Tour {
     /** Tour của TripConnect (Admin tạo), không có Agent. */
     public boolean isPlatformTour() {
         return agent == null;
+    }
+
+    public boolean isPrivateTour() {
+        return customRequestId != null;
     }
 
     public boolean hasItineraryFile() {

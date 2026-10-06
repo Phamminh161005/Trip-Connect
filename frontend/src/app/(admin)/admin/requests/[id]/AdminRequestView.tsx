@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Lock, Sparkles, Star, UserCheck } from "lucide-react";
 import { toast } from "sonner";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { InfoList, InfoRow } from "@/components/common/InfoList";
 import { ReasonDialog } from "@/components/common/ReasonDialog";
@@ -74,6 +75,16 @@ export function AdminRequestView({ id }: { id: number }) {
               <InfoRow label="Email" value={r.customerEmail ?? "—"} />
               <InfoRow label="Số điện thoại" value={r.customerPhone ?? "—"} />
               {r.agentName && <InfoRow label="Đơn vị phụ trách" value={r.agentName} />}
+              {r.bookingId && (
+                <InfoRow
+                  label="Đơn đặt tour"
+                  value={
+                    <Link href={`/admin/bookings/${r.bookingId}`} className="text-primary hover:underline">
+                      {r.bookingCode}
+                    </Link>
+                  }
+                />
+              )}
               {r.closedReason && <InfoRow label="Lý do đóng" value={r.closedReason} />}
             </InfoList>
           </CardContent>
@@ -88,6 +99,7 @@ export function AdminRequestView({ id }: { id: number }) {
           {timeLeftText(r.proposalDeadline)})
         </p>
       )}
+      <ChatPanel scope="admin" requestId={r.id} />
       {r.assignments.length > 0 && <HistoryCard request={r} />}
 
       <ReasonDialog

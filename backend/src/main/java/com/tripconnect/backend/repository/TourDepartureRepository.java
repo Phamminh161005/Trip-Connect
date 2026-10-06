@@ -65,6 +65,7 @@ public interface TourDepartureRepository extends JpaRepository<TourDeparture, Lo
             select d.id from TourDeparture d
             where d.startDate between :from and :to and d.status <> com.tripconnect.backend.enums.DepartureStatus.CANCELLED
               and d.lowBookingReminded = false
+              and d.tour.status <> com.tripconnect.backend.enums.TourStatus.PRIVATE
               and (select coalesce(sum(b.adults + b.children), 0) from Booking b where b.departure = d
                    and b.status = com.tripconnect.backend.enums.BookingStatus.PAID) * 100 < d.capacity * :percent
             order by d.id

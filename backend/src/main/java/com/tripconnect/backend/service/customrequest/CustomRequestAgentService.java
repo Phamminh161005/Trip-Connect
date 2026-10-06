@@ -51,7 +51,7 @@ public class CustomRequestAgentService {
         Specification<CustomRequestAssignment> spec = (root, query, cb) -> cb.and(
                 cb.equal(root.get("agent").get("id"), agentId), root.get("status").in(statuses));
         var page = assignmentRepository.findAll(spec, StablePaging.of(pageable));
-        return PageResponse.of(page, assembler.toAgentSummaries(page.getContent()));
+        return PageResponse.of(page, assembler.toAgentSummaries(page.getContent(), agentId));
     }
 
     @Transactional(readOnly = true)

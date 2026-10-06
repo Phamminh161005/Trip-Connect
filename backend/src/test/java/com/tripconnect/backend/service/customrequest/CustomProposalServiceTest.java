@@ -48,6 +48,7 @@ class CustomProposalServiceTest {
     @Mock private CustomProposalRepository proposalRepository;
     @Mock private CustomRequestAssembler assembler;
     @Mock private CustomRequestLifecycle lifecycle;
+    @Mock private com.tripconnect.backend.service.booking.PrivateTourFactory privateTourFactory;
     @Mock private ApplicationEventPublisher eventPublisher;
 
     private CustomProposalService service;
@@ -58,7 +59,7 @@ class CustomProposalServiceTest {
     void setUp() {
         Clock clock = Clock.fixed(NOW.atZone(VN).toInstant(), VN);
         service = new CustomProposalService(requestRepository, assignmentRepository, proposalRepository, assembler, lifecycle,
-                eventPublisher, clock);
+                privateTourFactory, eventPublisher, clock);
         User customer = new User();
         customer.setId(CUSTOMER_ID);
         customer.setEmail("khach@example.com");
@@ -185,16 +186,26 @@ class CustomProposalServiceTest {
     }
 
     @Test
-    void accept_agreesRequest_andTellsAgent() {
+    void accept_agreesRequest_createsPrivateBooking_andTellsBothSides() {
         CustomProposal p = sent(70L);
+        com.tripconnect.backend.entity.Booking booking = new com.tripconnect.backend.entity.Booking();
+        booking.setId(500L);
+        booking.setCode("TC261004000001");
+        booking.setStatus(com.tripconnect.backend.enums.BookingStatus.PENDING_PAYMENT);
+        booking.setTotalAmount(7_500_000);
+        booking.setDepositAmount(2_250_000);
+        booking.setHoldExpiresAt(NOW.plusHours(48));
+        when(privateTourFactory.create(request, p, NOW)).thenReturn(booking);
 
         service.accept(CUSTOMER_ID, 30L, 70L);
 
         assertThat(p.getStatus()).isEqualTo(ProposalStatus.ACCEPTED);
         assertThat(request.getStatus()).isEqualTo(CustomRequestStatus.AGREED);
         assertThat(request.getAgreedAt()).isEqualTo(NOW);
+        verify(privateTourFactory).create(request, p, NOW);
         verify(eventPublisher).publishEvent(any(NotificationEvents.UserWebEvent.class));
-        verify(eventPublisher).publishEvent(any(NotificationEvents.UserEmailEvent.class));
+        // Agent: đã đồng ý; khách: đơn đã tạo, cần đặt cọc
+        verify(eventPublisher, times(2)).publishEvent(any(NotificationEvents.UserEmailEvent.class));
     }
 
     @Test

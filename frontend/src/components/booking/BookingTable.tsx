@@ -71,6 +71,12 @@ export function BookingTable({
                 <div className="flex flex-col items-start gap-1">
                   <BookingStatusBadge status={b.status} />
                   <RefundStatusBadge status={b.refundStatus} />
+                  {b.customRequestId !== null && <span className="text-xs font-medium text-primary">Tour riêng</span>}
+                  {b.status === "DEPOSIT_PAID" && b.balanceDueDate && (
+                    <span className="text-xs text-violet-800">
+                      Còn {formatPrice(b.totalAmount - b.depositAmount)} · hạn {formatDay(b.balanceDueDate)}
+                    </span>
+                  )}
                   {b.canReview && !showCustomer && (
                     <Link
                       href={`${href}?review=1`}

@@ -42,6 +42,7 @@ class BookingServiceTest {
     @Mock private PaymentService paymentService;
     @Mock private BookingCancellation cancellation;
     @Mock private BookingAssembler assembler;
+    @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     private BookingService service;
     private TourDeparture departure;
@@ -52,7 +53,7 @@ class BookingServiceTest {
         Clock clock = Clock.fixed(NOW.atZone(VN).toInstant(), VN);
         BookingSettings settings = new BookingSettings(new BigDecimal("0.10"), 30, 15, 7, 3, 50);
         service = new BookingService(bookingRepository, departureRepository, userRepository, agentProfileRepository,
-                bookingStats, paymentService, cancellation, assembler, settings, clock);
+                bookingStats, paymentService, cancellation, assembler, settings, eventPublisher, clock);
 
         User agent = new User();
         agent.setId(AGENT_ID);

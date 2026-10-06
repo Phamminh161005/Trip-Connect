@@ -221,6 +221,42 @@ public final class EmailTemplates {
                         + "Bước tiếp theo là tạo tour riêng để khách đặt cọc. Chi tiết: " + url);
     }
 
+    public static Email depositPaid(String code, String title, java.time.LocalDate startDate, long deposit, long balance,
+                                   java.time.LocalDate dueDate, int travellers) {
+        return new Email(
+                "Đã nhận tiền cọc - đơn " + code + " - TripConnect",
+                "TripConnect đã nhận " + money(deposit) + " tiền cọc cho chuyến đi \"" + title + "\" khởi hành "
+                        + day(startDate) + " (đơn " + code + ").\n\n"
+                        + "Phần còn lại: " + money(balance) + ", hạn thanh toán hết ngày " + day(dueDate)
+                        + ". Bạn được gia hạn 1 lần thêm 3 ngày nếu cần.\n"
+                        + "Trước khi thanh toán phần còn lại, vui lòng nhập đầy đủ thông tin " + travellers
+                        + " người đi trong mục \"Đơn đặt của tôi\".\n\n"
+                        + "Quá hạn mà chưa thanh toán, đơn sẽ bị hủy và tiền cọc không được hoàn lại.");
+    }
+
+    public static Email balanceDue(String code, String title, long balance, java.time.LocalDate dueDate, boolean canExtend,
+                                   String url) {
+        return new Email(
+                "Sắp tới hạn thanh toán phần còn lại - đơn " + code + " - TripConnect",
+                "Chuyến đi \"" + title + "\" (đơn " + code + ") còn " + money(balance) + " cần thanh toán, hạn hết ngày "
+                        + day(dueDate) + ".\n"
+                        + (canExtend ? "Nếu cần thêm thời gian, bạn có thể gia hạn 1 lần thêm 3 ngày ngay trong trang đơn.\n" : "")
+                        + "Quá hạn mà chưa thanh toán, đơn sẽ bị hủy và tiền cọc không được hoàn lại.\n\n"
+                        + "Thanh toán: " + url);
+    }
+
+    /** Khách vừa chốt đề xuất: đơn tour riêng đã tạo, cần thanh toán (đặt cọc hoặc toàn bộ). */
+    public static Email privateBookingCreated(String code, String title, java.time.LocalDate startDate, long total,
+                                              long firstPayment, boolean deposit, java.time.LocalDateTime payBefore, String url) {
+        return new Email(
+                "Xác nhận tour riêng - đơn " + code + " - TripConnect",
+                "Bạn đã chốt chuyến đi \"" + title + "\" khởi hành " + day(startDate) + ". Đơn đặt tour " + code
+                        + " đã được tạo với tổng chi phí " + money(total) + ".\n\n"
+                        + (deposit ? "Vui lòng đặt cọc " + money(firstPayment) : "Vui lòng thanh toán " + money(firstPayment))
+                        + " trước " + payBefore.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+                        + ", quá hạn đơn sẽ tự hủy.\n\nThanh toán: " + url);
+    }
+
     public static Email customRequestClosed(String code, String reason, String url) {
         return new Email(
                 "Yêu cầu " + code + " đã đóng - TripConnect",

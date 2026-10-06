@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, MapPin, Receipt, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Hourglass, MapPin, Receipt, Sparkles, UserPen, Users } from "lucide-react";
 import { InfoList, InfoRow } from "@/components/common/InfoList";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +13,13 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import {
   CANCELLED_BY,
   PASSENGER_TYPE,
+  PAYMENT_PURPOSE,
   PAYMENT_STATUS,
   REFUND_RECORD_STATUS,
   REFUND_STATUS,
   travellersText,
 } from "@/lib/booking/labels";
+import { timeLeftText } from "@/lib/customRequest/labels";
 import { formatDay, formatPrice } from "@/lib/tour/labels";
 import type { BookingDetail } from "@/types/booking";
 import { BookingStatusBadge, RefundStatusBadge } from "./BookingBadges";
@@ -37,6 +39,7 @@ export function BookingDetailView({
   children,
   onHoldExpire,
   staff = false,
+  requestHref,
 }: {
   booking: BookingDetail;
   backHref: string;
@@ -51,10 +54,16 @@ export function BookingDetailView({
   children?: ReactNode;
   onHoldExpire?: () => void;
   staff?: boolean;
+  /** Tour riêng: trang yêu cầu thiết kế tour (thay cho trang tour công khai) */
+  requestHref?: string;
 }) {
   const b = booking;
   const travellers = b.adults + b.children + b.infants;
   const missing = travellers - b.passengers.length;
+  const plan = b.paymentPlan;
+  const privateTour = b.customRequestId !== null;
+  // Tour riêng nhập danh sách dần: nhắc phải đủ trước khi trả phần còn lại / trước ngày đi
+  const passengerDeadline = plan ? plan.balanceDueDate : b.passengerListDeadline;
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -66,6 +75,11 @@ export function BookingDetailView({
             <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight">
               Đơn {b.code}
               <BookingStatusBadge status={b.status} />
+              {privateTour && (
+                <Badge variant="outline" className="gap-1 border-primary/40 text-primary">
+                  <Sparkles className="size-3" /> Tour riêng
+                </Badge>
+              )}
               <RefundStatusBadge status={b.refundStatus} />
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">Đặt lúc {formatDateTime(b.createdAt)}</p>
@@ -74,7 +88,56 @@ export function BookingDetailView({
         </div>
       </div>
 
-      {b.status === "PENDING_PAYMENT" && b.canPay && (
+      {b.status === "PENDING_PAYMENT" && b.canPay && plan && (
+        <Alert className="rounded-2xl border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
+          <Hourglass />
+          <AlertTitle>
+            Đặt cọc {formatPrice(plan.depositAmount)} trước {formatDateTime(b.holdExpiresAt)} ({timeLeftText(b.holdExpiresAt)})
+          </AlertTitle>
+          <AlertDescription>
+            Quá hạn đơn sẽ tự hủy. Phần còn lại {formatPrice(plan.balanceAmount)} thanh toán trước hết ngày{" "}
+            {formatDay(plan.balanceDueDate)}.
+          </AlertDescription>
+        </Alert>
+      )}
+      {b.status === "PENDING_PAYMENT" && b.canPay && !plan && privateTour && (
+        <Alert className="rounded-2xl border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
+          <Hourglass />
+          <AlertTitle>
+            Thanh toán {formatPrice(b.totalAmount)} trước {formatDateTime(b.holdExpiresAt)} ({timeLeftText(b.holdExpiresAt)})
+          </AlertTitle>
+          <AlertDescription>Ngày đi đã gần nên chuyến đi được thanh toán một lần. Quá hạn đơn sẽ tự hủy.</AlertDescription>
+        </Alert>
+      )}
+      {b.status === "DEPOSIT_PAID" && plan && (
+        <Alert className="rounded-2xl border-violet-200 bg-violet-50 dark:border-violet-900 dark:bg-violet-950/40">
+          <Receipt />
+          <AlertTitle>
+            Đã đặt cọc {formatPrice(plan.depositAmount)} · còn lại {formatPrice(plan.balanceAmount)}, hạn hết ngày{" "}
+            {formatDay(plan.balanceDueDate)}
+            {plan.balanceExtended && " (đã gia hạn)"}
+          </AlertTitle>
+          <AlertDescription>
+            Quá hạn mà chưa thanh toán, đơn sẽ bị hủy và tiền cọc không được hoàn lại
+            {plan.canExtend && ". Nếu cần thêm thời gian, bạn có thể gia hạn 1 lần thêm 3 ngày"}.
+          </AlertDescription>
+        </Alert>
+      )}
+      {privateTour && missing > 0 && (b.status === "PENDING_PAYMENT" || b.status === "DEPOSIT_PAID" || b.status === "PAID") && (
+        <Alert className="rounded-2xl">
+          <UserPen />
+          <AlertTitle>
+            {staff ? "Khách" : "Bạn"} cần nhập đầy đủ thông tin {travellers} người đi trước hết ngày {formatDay(passengerDeadline)}
+          </AlertTitle>
+          <AlertDescription>
+            Hiện có {b.passengers.length}/{travellers} người.{" "}
+            {plan && b.status !== "PAID"
+              ? "Chưa đủ danh sách thì chưa thanh toán được phần còn lại."
+              : "Đơn vị tổ chức cần danh sách để đặt dịch vụ cho đoàn."}
+          </AlertDescription>
+        </Alert>
+      )}
+      {b.status === "PENDING_PAYMENT" && b.canPay && !privateTour && (
         <Alert className="rounded-2xl border-amber-200 bg-amber-50">
           <AlertTitle>
             <HoldCountdown expiresAt={b.holdExpiresAt} onExpire={onHoldExpire} />
@@ -107,7 +170,7 @@ export function BookingDetailView({
             {b.coverImageUrl && <Image src={b.coverImageUrl} alt={b.tourTitle} fill sizes="220px" className="object-cover" />}
           </div>
           <div className="flex flex-col gap-2 p-5">
-            <Link href={`/tours/${b.tourId}`} className="font-semibold hover:underline">
+            <Link href={privateTour && requestHref ? requestHref : `/tours/${b.tourId}`} className="font-semibold hover:underline">
               {b.tourTitle}
             </Link>
             <p className="text-sm text-muted-foreground">Đơn vị tổ chức: {b.providerName}</p>
@@ -139,7 +202,21 @@ export function BookingDetailView({
               {b.children > 0 && <InfoRow label={`Trẻ em × ${b.children}`} value={formatPrice(b.children * b.childPrice)} />}
               {b.infants > 0 && <InfoRow label={`Trẻ sơ sinh × ${b.infants}`} value="Miễn phí" />}
               <InfoRow label="Tổng cộng" value={<span className="text-lg text-primary">{formatPrice(b.totalAmount)}</span>} />
-              {b.paidAt && <InfoRow label="Thanh toán lúc" value={formatDateTime(b.paidAt)} />}
+              {plan && (
+                <>
+                  <InfoRow
+                    label="Đặt cọc (30%)"
+                    value={`${formatPrice(plan.depositAmount)} · ${plan.depositPaidAt ? `đã trả ${formatDateTime(plan.depositPaidAt)}` : "chưa trả"}`}
+                  />
+                  <InfoRow
+                    label="Phần còn lại"
+                    value={`${formatPrice(plan.balanceAmount)} · ${
+                      b.paidAt ? `đã trả ${formatDateTime(b.paidAt)}` : `hạn hết ngày ${formatDay(plan.balanceDueDate)}`
+                    }`}
+                  />
+                </>
+              )}
+              {b.paidAt && !plan && <InfoRow label="Thanh toán lúc" value={formatDateTime(b.paidAt)} />}
               {staff && b.commissionRate !== null && (
                 <InfoRow
                   label={`Phí nền tảng (${Math.round(b.commissionRate * 100)}%)`}
@@ -149,7 +226,8 @@ export function BookingDetailView({
             </InfoList>
             <p className="mt-3 text-xs text-muted-foreground">
               Chính sách hủy của đơn: hủy trước {b.refundPolicy.fullRefundDays} ngày hoàn 100%, trước {b.refundPolicy.partialRefundDays}{" "}
-              ngày hoàn {b.refundPolicy.partialRefundPercent}%, sát hơn không hoàn.
+              ngày hoàn {b.refundPolicy.partialRefundPercent}%, sát hơn không hoàn
+              {plan ? ". Tiền cọc không được hoàn khi khách hủy hoặc quá hạn thanh toán." : "."}
             </p>
           </CardContent>
         </Card>
@@ -179,7 +257,9 @@ export function BookingDetailView({
               </Badge>
             </CardTitle>
             {missing > 0 && b.status !== "CANCELLED" && (
-              <p className="text-sm text-muted-foreground">Còn {missing} khách chưa có thông tin.</p>
+              <p className="text-sm text-muted-foreground">
+                Còn {missing} khách chưa có thông tin{privateTour && ` · cần đủ trước hết ngày ${formatDay(passengerDeadline)}`}.
+              </p>
             )}
           </div>
           {passengerAction}
@@ -252,6 +332,7 @@ export function BookingDetailView({
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã giao dịch</TableHead>
+                  <TableHead>Khoản</TableHead>
                   <TableHead>Số tiền</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="hidden sm:table-cell">Ngân hàng / mã VNPay</TableHead>
@@ -262,6 +343,7 @@ export function BookingDetailView({
                 {b.payments.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-mono text-xs">{p.txnRef}</TableCell>
+                    <TableCell>{PAYMENT_PURPOSE[p.purpose]}</TableCell>
                     <TableCell>{formatPrice(p.amount)}</TableCell>
                     <TableCell>{PAYMENT_STATUS[p.status]}</TableCell>
                     <TableCell className="hidden sm:table-cell">

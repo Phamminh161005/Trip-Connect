@@ -1,6 +1,7 @@
 // Khớp các DTO đặt tour của Backend (BookingResponses, CreateBookingRequest)
 
-export type BookingStatus = "PENDING_PAYMENT" | "PAID" | "COMPLETED" | "CANCELLED";
+export type BookingStatus = "PENDING_PAYMENT" | "DEPOSIT_PAID" | "PAID" | "COMPLETED" | "CANCELLED";
+export type PaymentPurpose = "FULL" | "DEPOSIT" | "BALANCE";
 export type RefundStatus = "NONE" | "PENDING" | "REFUNDED" | "MANUAL_REQUIRED";
 export type PassengerType = "ADULT" | "CHILD" | "INFANT";
 export type CancelledBy = "CUSTOMER" | "AGENT" | "ADMIN" | "SYSTEM";
@@ -27,7 +28,23 @@ export interface BookingSummary {
   holdExpiresAt: string;
   /** Đơn hoàn thành, chưa đánh giá, còn trong hạn */
   canReview: boolean;
+  /** Tour riêng: yêu cầu thiết kế tour sinh ra đơn */
+  customRequestId: number | null;
+  /** > 0: trả 2 lần (cọc rồi phần còn lại) */
+  depositAmount: number;
+  balanceDueDate: string | null;
   createdAt: string;
+}
+
+/** Thanh toán 2 lần của tour riêng */
+export interface PaymentPlan {
+  depositAmount: number;
+  balanceAmount: number;
+  depositPaidAt: string | null;
+  /** Hạn trả phần còn lại (hết ngày) */
+  balanceDueDate: string;
+  balanceExtended: boolean;
+  canExtend: boolean;
 }
 
 export interface BookingPassenger {
@@ -42,6 +59,7 @@ export interface PaymentView {
   id: number;
   txnRef: string;
   amount: number;
+  purpose: PaymentPurpose;
   status: PaymentStatus;
   bankCode: string | null;
   transactionNo: string | null;
@@ -103,6 +121,10 @@ export interface BookingDetail {
   refunds: RefundView[];
   canPay: boolean;
   canCancel: boolean;
+  /** Số tiền lần thanh toán tiếp theo (cọc / phần còn lại / toàn bộ) */
+  amountDue: number;
+  customRequestId: number | null;
+  paymentPlan: PaymentPlan | null;
   /** Đã đánh giá thì có id; canReview = còn được viết đánh giá mới */
   reviewId: number | null;
   canReview: boolean;

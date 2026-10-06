@@ -10,7 +10,10 @@ import com.tripconnect.backend.exception.ForbiddenException;
 import com.tripconnect.backend.exception.ResourceNotFoundException;
 import com.tripconnect.backend.repository.*;
 import com.tripconnect.backend.service.tour.TourBookingStats;
+import com.tripconnect.backend.service.NotificationEvents;
+import com.tripconnect.backend.service.WebNotifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -48,6 +51,7 @@ public class BookingService {
     private final BookingCancellation cancellation;
     private final BookingAssembler assembler;
     private final BookingSettings settings;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     // ===================== Đặt tour =====================
@@ -81,7 +85,7 @@ public class BookingService {
 
         Booking booking = new Booking();
         setTravellers(booking, request.getAdults(), request.getChildren(), request.getInfants());
-        replacePassengers(booking, request.getPassengers(), departure.getStartDate(), tour.isInternational());
+        replacePassengers(booking, request.getPassengers(), departure.getStartDate(), tour.isInternational(), false);
         int free = departure.getCapacity() - bookingStats.seatsBooked(departure.getId());
         if (booking.seats() > free) {
             throw new IllegalStateException(free <= 0 ? "Lịch khởi hành này đã hết chỗ"
@@ -115,17 +119,58 @@ public class BookingService {
         return new BookingResponses.Created(assembler.toDetail(booking, BookingAssembler.Viewer.CUSTOMER), paymentUrl);
     }
 
-    /** Tạo lại link thanh toán (khách hủy ở VNPay / đóng tab) — chỉ khi còn hạn giữ chỗ. */
+    /**
+     * Link thanh toán cho lần trả tiếp theo: đơn chờ thanh toán (còn hạn giữ chỗ / hạn đặt cọc), hoặc phần còn lại
+     * của tour riêng đã đặt cọc (trước hạn, danh sách người đi phải đủ).
+     */
     @Transactional
     public String pay(Long userId, Long bookingId, String ipAddr) {
         Booking booking = requireMineForUpdate(userId, bookingId);
-        if (booking.getStatus() != BookingStatus.PENDING_PAYMENT) {
-            throw new IllegalStateException("Đơn không ở trạng thái chờ thanh toán");
-        }
-        if (!booking.getHoldExpiresAt().isAfter(LocalDateTime.now(clock))) {
-            throw new IllegalStateException("Đơn đã hết thời gian giữ chỗ, vui lòng đặt lại");
+        LocalDateTime now = LocalDateTime.now(clock);
+        switch (booking.getStatus()) {
+            case PENDING_PAYMENT -> {
+                if (!booking.getHoldExpiresAt().isAfter(now)) {
+                    throw new IllegalStateException(booking.getTour().isPrivateTour()
+                            ? "Đơn đã quá hạn đặt cọc" : "Đơn đã hết thời gian giữ chỗ, vui lòng đặt lại");
+                }
+            }
+            case DEPOSIT_PAID -> {
+                if (booking.getBalanceDueDate().isBefore(now.toLocalDate())) {
+                    throw new IllegalStateException("Đã quá hạn thanh toán phần còn lại");
+                }
+                if (booking.getPassengers().size() < booking.travellers()) {
+                    throw new IllegalStateException("Vui lòng nhập đủ thông tin " + booking.travellers()
+                            + " người đi trước khi thanh toán phần còn lại (hiện có " + booking.getPassengers().size() + ")");
+                }
+            }
+            default -> throw new IllegalStateException("Đơn không ở trạng thái chờ thanh toán");
         }
         return paymentService.createPaymentUrl(booking, ipAddr);
+    }
+
+    /** Tour riêng: khách tự gia hạn trả phần còn lại thêm 3 ngày, một lần, trước khi hết hạn. */
+    @Transactional
+    public BookingResponses.Detail extendBalance(Long userId, Long bookingId) {
+        Booking booking = requireMineForUpdate(userId, bookingId);
+        LocalDate today = LocalDate.now(clock);
+        if (booking.getStatus() != BookingStatus.DEPOSIT_PAID) {
+            throw new IllegalStateException("Chỉ gia hạn được khi đơn đã đặt cọc và chưa thanh toán phần còn lại");
+        }
+        if (booking.isBalanceExtended()) throw new IllegalStateException("Đơn đã dùng lượt gia hạn");
+        if (booking.getBalanceDueDate().isBefore(today)) throw new IllegalStateException("Đã quá hạn thanh toán phần còn lại");
+        LocalDate newDue = BookingRules.extendedDueDate(booking.getBalanceDueDate(), booking.getDeparture().getStartDate());
+        if (!newDue.isAfter(booking.getBalanceDueDate())) {
+            throw new IllegalStateException("Đã sát ngày khởi hành nên không thể gia hạn thêm");
+        }
+        booking.setBalanceDueDate(newDue);
+        booking.setBalanceExtended(true);
+        // Nhắc lại "trước 1 ngày" theo hạn mới
+        booking.setPaymentReminderStage((short) Math.min(booking.getPaymentReminderStage(), 2));
+        if (booking.getAgent() != null) {
+            eventPublisher.publishEvent(new NotificationEvents.UserWebEvent(booking.getAgent().getId(),
+                    WebNotifications.balanceExtended(booking.getId(), booking.getCode(), newDue)));
+        }
+        return assembler.toDetail(booking, BookingAssembler.Viewer.CUSTOMER);
     }
 
     /** Khách sửa danh sách hành khách (gõ sai tên, ngày sinh...) — tới hết hạn chót trước ngày đi. */
@@ -134,7 +179,8 @@ public class BookingService {
         Booking booking = requireMineForUpdate(userId, bookingId);
         LocalDateTime now = LocalDateTime.now(clock);
         boolean pendingAlive = booking.getStatus() == BookingStatus.PENDING_PAYMENT && booking.getHoldExpiresAt().isAfter(now);
-        if (booking.getStatus() != BookingStatus.PAID && !pendingAlive) {
+        boolean paid = booking.getStatus() == BookingStatus.PAID || booking.getStatus() == BookingStatus.DEPOSIT_PAID;
+        if (!paid && !pendingAlive) {
             throw new IllegalStateException("Đơn không ở trạng thái được cập nhật danh sách hành khách");
         }
         LocalDate startDate = booking.getDeparture().getStartDate();
@@ -143,7 +189,8 @@ public class BookingService {
                     + BookingRules.passengerListDeadline(startDate).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                     + "). Vui lòng liên hệ đơn vị tổ chức");
         }
-        replacePassengers(booking, passengers, startDate, booking.getTour().isInternational());
+        // Tour riêng: được lưu dần (chưa đủ người); phải đủ trước khi trả phần còn lại
+        replacePassengers(booking, passengers, startDate, booking.getTour().isInternational(), booking.getTour().isPrivateTour());
         return assembler.toDetail(booking, BookingAssembler.Viewer.CUSTOMER);
     }
 
@@ -186,17 +233,25 @@ public class BookingService {
         return switch (booking.getStatus()) {
             case PENDING_PAYMENT -> new BookingResponses.CancellationQuote(true, 0, 0, 0,
                     java.time.temporal.ChronoUnit.DAYS.between(today, start), "Đơn chưa thanh toán nên hủy không mất phí.");
+            case DEPOSIT_PAID -> start.isAfter(today)
+                    ? new BookingResponses.CancellationQuote(true, booking.getDepositAmount(), 0, 0,
+                    java.time.temporal.ChronoUnit.DAYS.between(today, start),
+                    "Tiền cọc không được hoàn lại theo chính sách tour riêng.")
+                    : new BookingResponses.CancellationQuote(false, booking.getDepositAmount(), 0, 0, 0,
+                    "Tour đã khởi hành nên không thể hủy trên hệ thống. Vui lòng liên hệ đơn vị tổ chức.");
             case PAID -> {
                 if (!start.isAfter(today)) {
                     yield new BookingResponses.CancellationQuote(false, booking.getTotalAmount(), 0, 0, 0,
                             "Tour đã khởi hành nên không thể hủy trên hệ thống. Vui lòng liên hệ đơn vị tổ chức.");
                 }
                 BookingRules.RefundQuote q = BookingRules.customerRefund(booking, start, today);
-                String explanation = q.percent() == 100
+                String depositNote = booking.paysInTwoParts() ? " Tiền cọc không được hoàn theo chính sách tour riêng." : "";
+                String explanation = (q.percent() == 100
                         ? "Hủy trước ngày đi " + q.daysBeforeDeparture() + " ngày: được hoàn 100%."
                         : q.percent() > 0
                         ? "Hủy trước ngày đi " + q.daysBeforeDeparture() + " ngày: được hoàn " + q.percent() + "%."
-                        : "Hủy sát ngày đi (còn " + q.daysBeforeDeparture() + " ngày): không được hoàn tiền theo chính sách.";
+                        : "Hủy sát ngày đi (còn " + q.daysBeforeDeparture() + " ngày): không được hoàn tiền theo chính sách.")
+                        + depositNote;
                 yield new BookingResponses.CancellationQuote(true, booking.getTotalAmount(), q.percent(), q.amount(),
                         q.daysBeforeDeparture(), explanation);
             }
@@ -235,9 +290,12 @@ public class BookingService {
      * Thay danh sách hành khách: phải đủ số khách, và số người từng loại (tính theo tuổi vào ngày đi)
      * đúng bằng số đã đặt — giá đã chốt theo số này.
      */
-    private void replacePassengers(Booking booking, List<PassengerRequest> requests, LocalDate startDate, boolean international) {
-        if (requests.size() != booking.travellers()) {
-            throw new IllegalArgumentException("Vui lòng nhập đủ thông tin " + booking.travellers() + " hành khách");
+    private void replacePassengers(Booking booking, List<PassengerRequest> requests, LocalDate startDate, boolean international,
+                                   boolean allowPartial) {
+        if (allowPartial ? requests.size() > booking.travellers() : requests.size() != booking.travellers()) {
+            throw new IllegalArgumentException(allowPartial
+                    ? "Đơn có " + booking.travellers() + " người đi, không thể nhập nhiều hơn"
+                    : "Vui lòng nhập đủ thông tin " + booking.travellers() + " hành khách");
         }
         Map<PassengerType, Integer> counts = new EnumMap<>(PassengerType.class);
         List<BookingPassenger> passengers = new ArrayList<>();
@@ -277,7 +335,7 @@ public class BookingService {
     }
 
     /** "TC" + ngày đặt + 6 số ngẫu nhiên — khó đoán, không lộ số lượng đơn. */
-    private String newCode(LocalDate today) {
+    String newCode(LocalDate today) {
         for (int i = 0; i < 10; i++) {
             String code = "TC" + today.format(CODE_DATE) + String.format("%06d", RANDOM.nextInt(1_000_000));
             if (!bookingRepository.existsByCode(code)) return code;

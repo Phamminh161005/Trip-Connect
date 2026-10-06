@@ -32,6 +32,15 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("update Notification n set n.readAt = :now where n.userId = :userId and n.readAt is null")
     int markAllRead(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
+    /** Mở cuộc trò chuyện -> các thông báo "tin nhắn mới" trỏ tới nó coi như đã đọc. */
+    @Modifying
+    @Query("""
+            update Notification n set n.readAt = :now
+            where n.userId = :userId and n.type = :type and n.link = :link and n.readAt is null
+            """)
+    int markReadByLink(@Param("userId") Long userId, @Param("type") com.tripconnect.backend.enums.NotificationType type,
+                       @Param("link") String link, @Param("now") LocalDateTime now);
+
     @Modifying
     @Query("delete from Notification n where n.readAt < :before")
     int deleteReadBefore(@Param("before") LocalDateTime before);
