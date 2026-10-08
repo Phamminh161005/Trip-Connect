@@ -245,6 +245,26 @@ public final class EmailTemplates {
                         + "Thanh toán: " + url);
     }
 
+    public static Email settlementCreated(String code, String period, int bookings, long retained, long commission, long payout,
+                                          java.time.LocalDate deadline, String url) {
+        return new Email(
+                "[TripConnect] Bảng đối soát " + period + " - " + code,
+                "TripConnect đã lập bảng đối soát " + period + " (" + code + ") gồm " + bookings + " đơn.\n\n"
+                        + "Tiền khách đã thanh toán: " + money(retained) + "\n"
+                        + "Phí nền tảng: " + money(commission) + "\n"
+                        + "Bạn nhận: " + money(payout) + "\n\n"
+                        + "Vui lòng kiểm tra và Xác nhận hoặc Khiếu nại trước hết ngày " + day(deadline)
+                        + ". Quá hạn, bảng đối soát được tự xác nhận.\n\nXem chi tiết: " + url);
+    }
+
+    public static Email settlementPaid(String code, long payout, String bankName, String accountNumber, String transactionRef,
+                                       String url) {
+        return new Email(
+                "[TripConnect] Đã thanh toán đối soát " + code,
+                "TripConnect đã chuyển " + money(payout) + " cho bảng đối soát " + code + " vào tài khoản " + bankName + " "
+                        + accountNumber + ".\nMã giao dịch: " + transactionRef + "\n\nChi tiết: " + url);
+    }
+
     /** Khách vừa chốt đề xuất: đơn tour riêng đã tạo, cần thanh toán (đặt cọc hoặc toàn bộ). */
     public static Email privateBookingCreated(String code, String title, java.time.LocalDate startDate, long total,
                                               long firstPayment, boolean deposit, java.time.LocalDateTime payBefore, String url) {

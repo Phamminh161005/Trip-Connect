@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, FilePen, LayoutDashboard, Map, Sparkles, Star, Store, Ticket, Users } from "lucide-react";
+import { ArrowLeft, FilePen, LayoutDashboard, Map, Sparkles, Star, Store, Ticket, Users, WalletCards } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ADMIN_AREA_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useAdminSummary } from "./adminQueries";
 
-type CountKey = "pendingAgentProfiles" | "pendingChangeRequests" | "pendingTours" | "manualRefunds" | "pendingCustomRequests";
+type CountKey =
+  | "pendingAgentProfiles"
+  | "pendingChangeRequests"
+  | "pendingTours"
+  | "manualRefunds"
+  | "pendingCustomRequests"
+  | "pendingSettlements";
 
 const ITEMS: { href: string; label: string; icon: typeof Users; exact?: boolean; count?: CountKey }[] = [
   { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
@@ -17,6 +23,7 @@ const ITEMS: { href: string; label: string; icon: typeof Users; exact?: boolean;
   { href: "/admin/tours", label: "Tour", icon: Map, count: "pendingTours" },
   { href: "/admin/bookings", label: "Đơn đặt tour", icon: Ticket, count: "manualRefunds" },
   { href: "/admin/requests", label: "Yêu cầu tour riêng", icon: Sparkles, count: "pendingCustomRequests" },
+  { href: "/admin/settlements", label: "Đối soát", icon: WalletCards, count: "pendingSettlements" },
   { href: "/admin/reviews", label: "Đánh giá", icon: Star },
   { href: "/admin/users", label: "Người dùng", icon: Users },
 ];

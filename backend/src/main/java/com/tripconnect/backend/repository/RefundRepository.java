@@ -15,6 +15,10 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
     List<Refund> findByBookingIdOrderByIdDesc(Long bookingId);
 
+    /** [bookingId, tổng tiền phải hoàn] (kể cả khoản đang xử lý / chờ hoàn thủ công) */
+    @Query("select r.booking.id, sum(r.amount) from Refund r where r.booking.id in :ids group by r.booking.id")
+    List<Object[]> sumByBookingIds(@Param("ids") java.util.Collection<Long> ids);
+
     boolean existsByBookingIdAndStatusAndIdNot(Long bookingId, com.tripconnect.backend.enums.RefundRecordStatus status, Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -10,6 +10,8 @@ public record AdminSummaryResponse(
         /* Đơn cần Admin hoàn tiền thủ công (VNPay báo lỗi) */
         long manualRefunds,
         /* Yêu cầu thiết kế tour đang chờ giao cho Agent */
-        long pendingCustomRequests
+        long pendingCustomRequests,
+        /* Đối soát cần Admin xử lý: có khiếu nại / chờ thanh toán */
+        long pendingSettlements
 ) {
 }

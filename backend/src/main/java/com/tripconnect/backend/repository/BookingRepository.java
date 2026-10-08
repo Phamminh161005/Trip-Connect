@@ -87,6 +87,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
             + "and b.balanceDueDate <= :lastDue and b.paymentReminderStage < 3 order by b.id")
     List<Long> findBalanceDueIds(@Param("lastDue") LocalDate lastDue);
 
+    /**
+     * Đơn của Agent chưa đối soát, phát sinh trước :cutoff: hoàn thành, hoặc bị hủy mà TripConnect vẫn giữ tiền
+     * (đã thu nhiều hơn đã hoàn). Tour của TripConnect (không có Agent) không đối soát.
+     */
+    @Query("""
+            select b from Booking b
+            where b.agent is not null
+              and not exists (select 1 from SettlementItem i where i.booking = b)
+              and ((b.status = com.tripconnect.backend.enums.BookingStatus.COMPLETED and b.completedAt < :cutoff)
+                or (b.status = com.tripconnect.backend.enums.BookingStatus.CANCELLED and b.cancelledAt < :cutoff
+                    and (select coalesce(sum(p.amount), 0) from Payment p
+                         where p.booking = b and p.status = com.tripconnect.backend.enums.PaymentStatus.SUCCESS)
+                      > (select coalesce(sum(r.amount), 0) from Refund r where r.booking = b)))
+            order by b.agent.id, b.id
+            """)
+    List<Booking> findUnsettled(@Param("cutoff") LocalDateTime cutoff);
+
     /** Đơn của tour riêng sinh ra từ một yêu cầu thiết kế tour. */
     @Query("select b from Booking b where b.tour.customRequestId = :requestId order by b.id desc")
     List<Booking> findByCustomRequestId(@Param("requestId") Long requestId);

@@ -10,6 +10,8 @@ export interface AdminSummaryResponse {
   pendingTours: number;
   manualRefunds: number;
   pendingCustomRequests: number;
+  /** Đối soát có khiếu nại / chờ thanh toán */
+  pendingSettlements: number;
 }
 
 /** Một dòng trong danh sách hồ sơ đối tác. */

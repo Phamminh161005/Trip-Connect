@@ -10,6 +10,8 @@ import com.tripconnect.backend.enums.RefundStatus;
 import com.tripconnect.backend.enums.TourStatus;
 import com.tripconnect.backend.repository.BookingRepository;
 import com.tripconnect.backend.repository.CustomRequestRepository;
+import com.tripconnect.backend.repository.SettlementRepository;
+import com.tripconnect.backend.enums.SettlementStatus;
 import com.tripconnect.backend.repository.TourRepository;
 import com.tripconnect.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class AdminDashboardController {
     private final TourRepository tourRepository;
     private final BookingRepository bookingRepository;
     private final CustomRequestRepository customRequestRepository;
+    private final SettlementRepository settlementRepository;
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -41,7 +44,9 @@ public class AdminDashboardController {
                 agentProfileRepository.countByStatus(AgentStatus.APPROVED),
                 tourRepository.countByStatus(TourStatus.PENDING_APPROVAL),
                 bookingRepository.countByRefundStatus(RefundStatus.MANUAL_REQUIRED),
-                customRequestRepository.countByStatus(CustomRequestStatus.NEW)
+                customRequestRepository.countByStatus(CustomRequestStatus.NEW),
+                settlementRepository.countByStatusIn(
+                        java.util.List.of(SettlementStatus.DISPUTED, SettlementStatus.AWAITING_PAYMENT))
         );
     }
 }

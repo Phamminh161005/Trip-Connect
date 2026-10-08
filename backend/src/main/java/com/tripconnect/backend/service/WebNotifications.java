@@ -187,6 +187,41 @@ public final class WebNotifications {
 
     // ===== Agent =====
 
+    // ----- Đối soát -----
+
+    public static WebMessage settlementCreated(Long settlementId, String code, String period, long payout, LocalDate deadline) {
+        return new WebMessage(NotificationType.SETTLEMENT_CREATED, "Bảng đối soát " + period + " - " + code,
+                "Bạn nhận " + EmailTemplates.money(payout) + ". Vui lòng xác nhận hoặc khiếu nại trước "
+                        + EmailTemplates.day(deadline), "/agent/settlements/" + settlementId);
+    }
+
+    public static WebMessage settlementResolved(Long settlementId, String code, boolean adjusted) {
+        return new WebMessage(NotificationType.SETTLEMENT_RESOLVED, "Khiếu nại đối soát " + code + " đã được xử lý",
+                adjusted ? "Bảng đối soát đã được điều chỉnh, vui lòng xác nhận lại"
+                        : "Khiếu nại không được chấp nhận, bảng đối soát chuyển sang chờ thanh toán",
+                "/agent/settlements/" + settlementId);
+    }
+
+    public static WebMessage settlementAutoConfirmed(Long settlementId, String code) {
+        return new WebMessage(NotificationType.SETTLEMENT_RESOLVED, "Bảng đối soát " + code + " đã tự xác nhận",
+                "Quá hạn phản hồi nên bảng đối soát được xác nhận, chờ TripConnect thanh toán", "/agent/settlements/" + settlementId);
+    }
+
+    public static WebMessage settlementPaid(Long settlementId, String code, long payout, String transactionRef) {
+        return new WebMessage(NotificationType.SETTLEMENT_PAID, "TripConnect đã thanh toán đối soát " + code,
+                EmailTemplates.money(payout) + " · mã giao dịch " + transactionRef, "/agent/settlements/" + settlementId);
+    }
+
+    public static WebMessage settlementDisputed(Long settlementId, String code, String companyName) {
+        return new WebMessage(NotificationType.SETTLEMENT_DISPUTED, "Khiếu nại đối soát " + code,
+                companyName + " khiếu nại bảng đối soát, cần xử lý", "/admin/settlements/" + settlementId);
+    }
+
+    public static WebMessage settlementReady(Long settlementId, String code, String companyName, long payout) {
+        return new WebMessage(NotificationType.SETTLEMENT_READY, "Đối soát " + code + " chờ thanh toán",
+                companyName + " · " + EmailTemplates.money(payout), "/admin/settlements/" + settlementId);
+    }
+
     public static WebMessage privateDepositPaidForAgent(Long bookingId, String code, String tourTitle, long deposit) {
         return new WebMessage(NotificationType.BOOKING_DEPOSIT_PAID, "Khách đã đặt cọc tour riêng - đơn " + code,
                 tourTitle + " · cọc " + EmailTemplates.money(deposit), "/agent/bookings/" + bookingId);

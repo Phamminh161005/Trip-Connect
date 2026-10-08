@@ -25,6 +25,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     List<Payment> findByBookingIdAndStatus(Long bookingId, PaymentStatus status);
 
+    /** [bookingId, tổng tiền đã thu thành công] */
+    @org.springframework.data.jpa.repository.Query("select p.booking.id, sum(p.amount) from Payment p where p.booking.id in :ids "
+            + "and p.status = com.tripconnect.backend.enums.PaymentStatus.SUCCESS group by p.booking.id")
+    List<Object[]> sumSuccessByBookingIds(@org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
+
     Optional<Payment> findFirstByBookingIdAndStatus(Long bookingId, PaymentStatus status);
 
     long countByBookingId(Long bookingId);
