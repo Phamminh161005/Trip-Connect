@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +27,7 @@ import { applyApiError } from "@/lib/form/applyApiError";
 import { focusNextOnEnter } from "@/lib/form/focusNextOnEnter";
 import { revalidateTouched } from "@/lib/form/revalidateTouched";
 import { CUSTOM_REQUEST_RULES as RULES } from "@/lib/customRequest/labels";
+import { readPrefill } from "@/lib/customRequest/prefill";
 import { ACCOMMODATION_LABELS, TRANSPORT_LABELS, localDateString } from "@/lib/tour/labels";
 import { whenValid } from "@/lib/validation/whenValid";
 import type { AccommodationType, TransportMode } from "@/types/tour";
@@ -105,6 +107,9 @@ const STEPS = [
 /** Form gửi yêu cầu thiết kế tour riêng. */
 export function CustomRequestForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Thông tin trợ lý AI điền sẵn (chỉ đọc một lần lúc mở form)
+  const [prefill] = useState(() => readPrefill(new URLSearchParams(searchParams.toString())));
   const provinces = useProvinceOptions();
   const locations = useQuery({ queryKey: ["locations"], queryFn: getLocations, staleTime: Infinity });
   const categories = useQuery({ queryKey: ["tour-categories"], queryFn: getTourCategories, staleTime: Infinity });
@@ -113,20 +118,20 @@ export function CustomRequestForm() {
     resolver: zodResolver(schema),
     mode: "onTouched",
     defaultValues: {
-      departureLocationId: undefined as unknown as number,
-      destinationIds: [],
-      earliestStart: "",
-      latestStart: "",
-      durationDays: 3,
-      adults: 2,
-      children: 0,
-      infants: 0,
+      departureLocationId: prefill.departureLocationId ?? (undefined as unknown as number),
+      destinationIds: prefill.destinationIds ?? [],
+      earliestStart: prefill.earliestStart ?? "",
+      latestStart: prefill.latestStart ?? "",
+      durationDays: prefill.durationDays ?? 3,
+      adults: prefill.adults ?? 2,
+      children: prefill.children ?? 0,
+      infants: prefill.infants ?? 0,
       budgetMin: undefined,
-      budgetMax: undefined,
+      budgetMax: prefill.budgetMax,
       categoryIds: [],
       transportModes: [],
       accommodationType: "",
-      notes: "",
+      notes: prefill.notes ?? "",
     },
   });
   const earliestStart = useWatch({ control: form.control, name: "earliestStart" });

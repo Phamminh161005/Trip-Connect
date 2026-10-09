@@ -1,5 +1,6 @@
 package com.tripconnect.backend.controller;
 
+import com.tripconnect.backend.ai.rag.TourRecommender;
 import com.tripconnect.backend.dto.search.SearchResponses;
 import com.tripconnect.backend.security.AuthenticatedUser;
 import com.tripconnect.backend.service.search.SearchHistoryService;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class SearchHistoryController {
 
     private final SearchHistoryService historyService;
+    private final TourRecommender recommender;
 
     @GetMapping
     public List<SearchResponses.RecentSearch> recent(@AuthenticationPrincipal AuthenticatedUser currentUser) {
@@ -28,7 +30,10 @@ public class SearchHistoryController {
     @PostMapping("/claim")
     public Map<String, Integer> claim(@AuthenticationPrincipal AuthenticatedUser currentUser,
                                       @RequestHeader(value = TourController.VISITOR_HEADER, required = false) String visitorId) {
-        return Map.of("claimed", historyService.claim(currentUser.userId(), visitorId));
+        int claimed = historyService.claim(currentUser.userId(), visitorId);
+        // Lượt xem tour lúc chưa đăng nhập cũng chuyển sang tài khoản (cho mục "Gợi ý cho bạn")
+        recommender.claimViews(currentUser.userId(), visitorId);
+        return Map.of("claimed", claimed);
     }
 
     @DeleteMapping("/{id}")

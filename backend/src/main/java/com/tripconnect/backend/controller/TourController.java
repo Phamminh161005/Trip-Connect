@@ -1,5 +1,6 @@
 package com.tripconnect.backend.controller;
 
+import com.tripconnect.backend.ai.rag.TourRecommender;
 import com.tripconnect.backend.dto.PageResponse;
 import com.tripconnect.backend.dto.TemporaryUrlResponse;
 import com.tripconnect.backend.dto.search.SearchResponses;
@@ -14,6 +15,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +34,7 @@ public class TourController {
     private final PublicTourService publicTourService;
     private final TourSearchService searchService;
     private final SearchHistoryService historyService;
+    private final TourRecommender recommender;
 
     /**
      * Tìm tour đang bán. Ví dụ: ?q=ha long&destinationId=14&dateFrom=2026-10-15&priceMax=5000000&sort=PRICE_ASC
@@ -62,6 +65,35 @@ public class TourController {
     @GetMapping("/{id}")
     public TourResponses.Detail get(@PathVariable Long id) {
         return publicTourService.get(id);
+    }
+
+    /** Ghi lượt xem trang tour (dữ liệu cho mục "Gợi ý cho bạn"). Cần token hoặc mã khách. */
+    @PostMapping("/{id}/views")
+    public ResponseEntity<Void> recordView(@PathVariable Long id,
+                                           @AuthenticationPrincipal AuthenticatedUser currentUser,
+                                           @RequestHeader(value = VISITOR_HEADER, required = false) String visitorId) {
+        try {
+            recommender.recordView(id, currentUser == null ? null : currentUser.userId(), visitorId);
+        } catch (RuntimeException e) {
+            // Ghi lượt xem hỏng không ảnh hưởng gì tới khách
+            log.warn("Không ghi được lượt xem tour {}: {}", id, e.getMessage());
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Tour đang bán có nội dung gần giống tour này nhất. */
+    @GetMapping("/{id}/similar")
+    public List<SearchResponses.TourCard> similar(@PathVariable Long id,
+                                                  @RequestParam(defaultValue = "4") @Min(1) @Max(12) int limit) {
+        return recommender.similar(id, limit);
+    }
+
+    /** Gợi ý theo các tour người này xem gần đây; rỗng nếu chưa xem tour nào. */
+    @GetMapping("/recommended")
+    public List<SearchResponses.TourCard> recommended(@RequestParam(defaultValue = "8") @Min(1) @Max(20) int limit,
+                                                      @AuthenticationPrincipal AuthenticatedUser currentUser,
+                                                      @RequestHeader(value = VISITOR_HEADER, required = false) String visitorId) {
+        return recommender.forViewer(currentUser == null ? null : currentUser.userId(), visitorId, limit);
     }
 
     /** Link tải file chương trình tour (PDF), tự hết hạn sau 5 phút. */

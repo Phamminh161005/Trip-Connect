@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { RealtimeProvider } from "@/lib/realtime/RealtimeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { AssistantWidget } from "@/components/assistant/AssistantWidget";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
@@ -24,6 +25,8 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RealtimeProvider>{children}</RealtimeProvider>
+        {/* Đặt ở đây (không ở layout) để cuộc trò chuyện không bị mất khi chuyển giữa các khu vực trang */}
+        <AssistantWidget />
         {/* Giao diện hiện chỉ có chế độ sáng -> cố định theme toast để không bị tối theo cài đặt máy */}
         <Toaster theme="light" position="top-center" richColors closeButton />
       </AuthProvider>

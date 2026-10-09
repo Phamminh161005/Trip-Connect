@@ -8,7 +8,8 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { TourCard, TourCardSkeleton } from "@/components/search/TourCard";
 import { locationLabel } from "@/components/auth/register/LocationMultiSelect";
 import { getTourCategories } from "@/lib/api/catalog";
-import { getPopularDestinations, searchTours } from "@/lib/api/search";
+import { getPopularDestinations, getRecommendedTours, searchTours } from "@/lib/api/search";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import type { TourSearchParams } from "@/types/search";
 
 function Section({ title, description, href, children }: { title: string; description?: string; href?: string; children: ReactNode }) {
@@ -51,6 +52,28 @@ function TourGridSection({
         {query.isPending
           ? Array.from({ length: 4 }, (_, i) => <TourCardSkeleton key={i} />)
           : query.data.content.map((tour) => <TourCard key={tour.id} tour={tour} />)}
+      </div>
+    </Section>
+  );
+}
+
+/** Gợi ý theo các tour người này xem gần đây. Chưa xem tour nào thì ẩn. */
+function RecommendedForYou() {
+  const { status, user } = useAuth();
+  const query = useQuery({
+    queryKey: ["recommended-tours", user?.userId ?? "guest"],
+    queryFn: () => getRecommendedTours(4),
+    enabled: status !== "loading",
+    staleTime: 0,
+  });
+  if (!query.data?.length) return null;
+
+  return (
+    <Section title="Gợi ý cho bạn" description="Dựa trên những tour bạn đã xem gần đây.">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {query.data.map((tour) => (
+          <TourCard key={tour.id} tour={tour} />
+        ))}
       </div>
     </Section>
   );
@@ -119,6 +142,7 @@ function Categories() {
 export function HomeSections() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-14 sm:px-6 lg:px-10">
+      <RecommendedForYou />
       <PopularDestinations />
       <TourGridSection
         title="Tour mới mở bán"

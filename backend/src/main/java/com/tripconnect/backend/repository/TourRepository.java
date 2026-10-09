@@ -27,7 +27,12 @@ public interface TourRepository extends JpaRepository<Tour, Long>, JpaSpecificat
 
     long countByStatus(TourStatus status);
 
+    /** Tour theo trạng thái kèm nơi đi, điểm đến, loại hình (dựng nội dung để tạo véc-tơ). */
+    @EntityGraph(attributePaths = {"departureLocation", "destinations", "categories"})
+    List<Tour> findWithContentByStatus(TourStatus status);
+
     List<Tour> findBySearchText(String searchText);
+
 
     /** Dữ liệu cho thẻ tour ở trang tìm kiếm (nơi khởi hành, điểm đến, Agent) trong 1 câu query. */
     @EntityGraph(attributePaths = {"agent", "departureLocation", "destinations"})

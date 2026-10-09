@@ -71,10 +71,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/locations/**", "/api/tour-categories/**", "/api/banks/**").permitAll()
                         // Khách chưa đăng nhập vẫn xem được tour đang bán
                         .requestMatchers(HttpMethod.GET, "/api/tours/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/tours/*/views").permitAll()
                         // VNPay gửi kết quả thanh toán (tin cậy nhờ chữ ký, không cần đăng nhập)
                         .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/**").permitAll()
                         // Bắt tay WebSocket không mang header; token được kiểm tra ở khung CONNECT (StompAuthInterceptor)
                         .requestMatchers("/ws/**").permitAll()
+                        // Trợ lý AI: khách vãng lai hỏi được; lịch sử trò chuyện cần đăng nhập
+                        .requestMatchers("/api/assistant/status", "/api/assistant/chat").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/agent/**").hasRole("AGENT")
                         .anyRequest().authenticated()
