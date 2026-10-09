@@ -25,6 +25,16 @@ Một số điểm kỹ thuật:
 - **Trợ lý AI:** Gemini với gọi hàm (function calling) và RAG trên véc-tơ tour và kho kiến thức, trả lời dạng luồng (SSE).
 - **Báo cáo:** Power BI đọc dữ liệu qua các view chỉ đọc trong schema `reporting`.
 
+### Xác thực và phân quyền
+
+- **Email + OTP:** mật khẩu băm BCrypt; OTP chỉ lưu bản băm, hiệu lực 5 phút, tối đa 5 lần nhập sai.
+- **Google và token:** Backend tự xác minh Google ID token; access token (JWT) chỉ giữ trong bộ nhớ trang, refresh token
+  nằm trong cookie `HttpOnly` qua route BFF của Next.js, CSDL chỉ lưu bản băm.
+- **Khóa tài khoản:** sai mật khẩu 5 lần thì khóa 15 phút, mở khóa ngay được bằng OTP.
+- **Xoay vòng refresh token:** token đã dùng mà bị dùng lại thì thu hồi mọi phiên của người dùng.
+- **Phân quyền:** tách theo nhóm API `/api`, `/api/agent`, `/api/admin`; đối tác chỉ bán tour khi hồ sơ đã được duyệt.
+- **Giới hạn tần suất** đăng ký, đăng nhập và gửi OTP theo IP và email.
+
 ## Công nghệ
 
 | Tầng | Công nghệ |
